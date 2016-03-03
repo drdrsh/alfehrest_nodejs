@@ -1,0 +1,4 @@
+node_modules
+/settings/database.js
+*/.idea/workspace.xml 
+*/.idea/tasks.xml
