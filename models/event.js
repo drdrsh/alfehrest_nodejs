@@ -5,9 +5,9 @@ function EventModel() {
 
     BaseModel.call(this);
 
-    this.getEntityName = function(){
-        return "event";
-    };
+    this.getEntityName = function(){ return "event" };
+
+    this.getNameField = function(){ return "title" };
 
     this.getRelationshipSchema = function() {
         return {};

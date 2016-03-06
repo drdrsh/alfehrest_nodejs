@@ -5,9 +5,9 @@ function PlaceModel() {
 
     BaseModel.call(this);
 
-    this.getEntityName = function(){
-        return "place";
-    };
+    this.getEntityName = function(){ return "place" };
+
+    this.getNameField = function(){ return "name" };
 
     this.getRelationshipSchema = function() {
         return {};

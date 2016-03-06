@@ -64,7 +64,7 @@ function EntityController(app, router) {
 
     function getOne(req, res) {
 
-        var id = req.body.id;
+        var id = req.params.id;
         var entityType = getEntityName();
         if(!id.startsWith(entityType)){
             res.status(404).send("Not Found");

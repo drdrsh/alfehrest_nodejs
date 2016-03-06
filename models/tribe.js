@@ -5,9 +5,9 @@ function TribeModel() {
 
     BaseModel.call(this);
 
-    this.getEntityName = function(){
-        return "tribe";
-    };
+    this.getEntityName = function(){ return "tribe" };
+
+    this.getNameField = function(){ return "name" };
 
     this.getRelationshipSchema = function() {
         return {};

@@ -5,9 +5,9 @@ function TranscriptModel() {
 
     BaseModel.call(this);
 
-    this.getEntityName = function(){
-        return "transcript";
-    };
+    this.getEntityName = function(){ return "transcript" };
+
+    this.getNameField = function(){ return "title" };
 
     this.getRelationshipSchema = function() {
         return {};

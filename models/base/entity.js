@@ -127,12 +127,13 @@ function getAll(language) {
 
     var deferred = q.defer();
     var entityName = this.getEntityName();
+    var nameField = this.getNameField();
     var eCol = cfg.entity_collection;
 
     var query = `
         FOR e in ${eCol}
             FILTER e._entity_type == '${entityName}'
-        RETURN {id: e.id, name: e.strings['${language}']['name'], entity_type: e._entity_type}
+        RETURN {id: e.id, name: e.strings['${language}']['${nameField}'], entity_type: e._entity_type}
     `;
 
     modelHelper.getAllRecords(query)
@@ -146,6 +147,8 @@ function getAll(language) {
 }
 
 function getEntityName() { return "Node"; }
+
+function getNameField() { return "name"; }
 
 function getRelationshipSchema() { return {}; }
 

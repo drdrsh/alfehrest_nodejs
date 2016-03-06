@@ -5,9 +5,10 @@ function PersonModel() {
 
     BaseModel.call(this);
 
-    this.getEntityName = function(){
-        return "person";
-    };
+    this.getEntityName = function(){ return "person" };
+
+    this.getNameField = function(){ return "name" };
+
 
     this.getRelationshipSchema = function() {
 
