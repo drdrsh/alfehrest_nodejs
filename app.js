@@ -1,7 +1,7 @@
 var express    = require('express');
 var bodyParser = require('body-parser');
-var fs = require('fs')
-var morgan = require('morgan')
+var fs         = require('fs');
+var morgan     = require('morgan');
 
 var app    = express();
 var router = express.Router();
@@ -80,6 +80,7 @@ require('./controllers').load(app, router);
 
 var port = process.env.PORT || 8080;
 
-app.listen(port);
+app.server = app.listen(port);
 module.exports = app;
+
 console.log('Magic happens on port ' + port);

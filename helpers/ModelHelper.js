@@ -97,7 +97,7 @@ ModelHelper.executeQueries = function(queries) {
 
 ModelHelper.executeQuery = function(query){
     return new Promise(function(resolve, reject) {
-        this.getDatabase().query(query)
+        ModelHelper.getDatabase().query(query)
             .then(
                 () => { resolve(); },
                 err => { reject(framework.error(err)); }

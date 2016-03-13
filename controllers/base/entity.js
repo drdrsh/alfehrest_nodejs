@@ -41,7 +41,7 @@ function EntityController(app, router) {
             err => { next(err); }
         )
         .then(
-            data => { res.send({id: newEntityId})},
+            data => { res.send({id: newEntityId}); },
             err => { next(err); }
         );
 
@@ -134,9 +134,9 @@ function EntityController(app, router) {
     router.get('/' + getEntityName() + '/schema/', getSchema);
     router.get('/' + getEntityName() + '/:id/', getOne);
     router.get('/' + getEntityName() + '/', getAll);
+    router.put('/' + getEntityName() + '/:id/', update);
     router.post('/' + getEntityName() + '/', post);
     router.delete('/' + getEntityName() + '/', remove);
-    router.put('/' + getEntityName() + '/:id/', update);
 
 }
 
