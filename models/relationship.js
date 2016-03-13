@@ -1,8 +1,7 @@
-var q = require('q');
 var uniqueIdGenerator = require('shortid');
 
-var cfg = alfehrest.helpers.settings.get("database");
-var modelHelper = alfehrest.helpers.model;
+var cfg = framework.helpers.settings.get("database");
+var modelHelper = framework.helpers.model;
 var db = modelHelper.getDatabase();
 var instance;
 
@@ -42,7 +41,7 @@ function prepareRelationshipData(language, parentId, data, isUpdate) {
         try {
             relationshipFields = relationshipSchema[secondEntityType][relationshipSubtype].fields;
         } catch(e) {
-            throw new Error("Unsupported relationship type");
+            throw framework.error(1, 400, "Unsupported relationship type");
         }
 
         //Validate and restructure the incoming data
@@ -69,97 +68,108 @@ function prepareRelationshipData(language, parentId, data, isUpdate) {
 
 function create(language, parentId, data) {
 
-    var deferred = q.defer();
-    var records = JSON.stringify(prepareRelationshipData(language, parentId, data, false));
+    var records = null;
+
+    try {
+        records = JSON.stringify(prepareRelationshipData(language, parentId, data, false));
+    } catch(e) {
+        Promise.reject(e);
+    }
     var rCol = cfg.relation_collection;
 
     var query = `LET records = ${records}
     FOR record IN records
     INSERT record in ${rCol}`;
 
-    modelHelper.executeQuery(query)
-        .then(() => { deferred.resolve() })
-        .fail(() => { deferred.reject() });
+    return modelHelper.executeQuery(query);
 
-    return deferred.promise;
+}
+
+function updateCurrentRelationships(language, entityId, incomingRelationships, currentRelationships) {
+
+    var rCol = cfg.relation_collection;
+    var eCol = cfg.entity_collection;
+
+    var insertions = [];
+    var updates = [];
+    var deletions = [];
+
+    var relationshipKeys = {};
+    for(let i=0; i<currentRelationships.length; i++) {
+        var rel = currentRelationships[i];
+        relationshipKeys[rel['_key']] = false;
+    }
+
+    for(let i=0; i<incomingRelationships.length; i++) {
+        var rel = incomingRelationships[i];
+        if(rel['id'] != '' ) {
+            if(!rel['id'] in relationshipKeys) {
+                deferred.reject();
+                return;
+            }
+            relationshipKeys[rel['id']] = true;
+            updates.push(rel);
+            continue;
+        }
+        insertions.push(rel);
+    }
+
+    for(var idx in relationshipKeys){
+        if(! relationshipKeys[idx]){
+            deletions.push(idx);
+        }
+    }
+
+    try {
+        insertions = JSON.stringify(prepareRelationshipData(language, entityId, insertions, false));
+        updates = JSON.stringify(prepareRelationshipData(language, entityId, updates, true));
+        deletions = JSON.stringify(deletions);
+    } catch (e) {
+        return Promise.reject(e);
+    }
+
+    var queries = [];
+    queries.push(`
+            LET insertions = ${insertions}
+            FOR record_1 IN insertions
+            INSERT record_1 IN ${rCol}
+            `);
+
+    queries.push(`
+            LET updates = ${updates}
+                FOR record_2 IN updates
+                    UPDATE record_2._key WITH record_2 IN ${rCol}
+            `)
+
+    queries.push(`
+            LET deletions = ${deletions}
+            FOR id IN deletions
+                REMOVE id IN ${rCol}`
+    );
+
+    return modelHelper.executeQueries(queries);
 }
 
 function update(language, entityId, incomingRelationships) {
 
-    var deferred = q.defer();
-    var rCol = cfg.relation_collection;
-    var eCol = cfg.entity_collection;
-
-    this.getAll(language, entityId)
-        .then(
-          currentRelationships => {
-
-              var insertions = [];
-              var updates = [];
-              var deletions = [];
-
-              var relationshipKeys = {};
-              for(let i=0; i<currentRelationships.length; i++) {
-                  var rel = currentRelationships[i];
-                  relationshipKeys[rel['_key']] = false;
-              }
-
-              for(let i=0; i<incomingRelationships.length; i++) {
-                  var rel = incomingRelationships[i];
-                  if(rel['id'] != '' ) {
-                      if(!rel['id'] in relationshipKeys) {
-                          deferred.reject();
-                          return;
-                      }
-                      relationshipKeys[rel['id']] = true;
-                      updates.push(rel);
-                      continue;
-                  }
-                  insertions.push(rel);
-              }
-
-              for(var idx in relationshipKeys){
-                  if(! relationshipKeys[idx]){
-                      deletions.push(idx);
-                  }
-              }
-
-              insertions = JSON.stringify(prepareRelationshipData(language, entityId, insertions, false));
-              updates = JSON.stringify(prepareRelationshipData(language, entityId, updates, true));
-              deletions = JSON.stringify(deletions);
-              var queries = [];
-              queries.push(`
-                LET insertions = ${insertions}
-                FOR record_1 IN insertions
-                INSERT record_1 IN ${rCol}
-                `);
-
-              queries.push(`
-                LET updates = ${updates}
-                    FOR record_2 IN updates
-                        UPDATE record_2._key WITH record_2 IN ${rCol}
-                `)
-
-              queries.push(`
-                LET deletions = ${deletions}
-                FOR id IN deletions
-                    REMOVE id IN ${rCol}`
-              );
-
-              modelHelper.executeQueries(queries)
-                .then(() => {deferred.resolve()})
-                .fail(() => {deferred.reject()})
-          }
-        )
-        .fail();
-
-
-    return deferred.promise;
+    var that = this;
+    return new Promise(function (resolve, reject) {
+        that.getAll(language, entityId)
+            .then(
+                currentRelationships => {
+                    updateCurrentRelationships(language, entityId, incomingRelationships, currentRelationships)
+                    .then(
+                        () => {resolve(); },
+                        err => { reject(err); }
+                    );
+                },
+                err => { reject(err); }
+            );
+    });
 }
 
 function getAll(language, entityId) {
 
-    var deferred = q.defer();
     var rCol = cfg.relation_collection;
     var eCol = cfg.entity_collection;
     var fqnEntityId = eCol + '/' + entityId;
@@ -169,17 +179,22 @@ function getAll(language, entityId) {
             FILTER r._from == '${fqnEntityId}'
         RETURN r`;
 
-    modelHelper.getAllRecords(query)
+    return new Promise(function(resolve, reject){
+        modelHelper.getAllRecords(query)
         .then(
             records => {
-                for(var i=0; i<records.length; i++) {
-                    records[i] = modelHelper.detranslateObject(records[i]);
+                try {
+                    for (var i = 0; i < records.length; i++) {
+                        records[i] = modelHelper.detranslateObject(records[i]);
+                    }
+                } catch(e) {
+                    return reject(e);
                 }
-                deferred.resolve(records);
-            })
-        .fail(() => { deferred.reject() });
-
-    return deferred.promise;
+                resolve(records);
+            },
+            err => { reject(err); }
+        )
+    });
 }
 
 

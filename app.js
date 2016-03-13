@@ -1,67 +1,18 @@
-// server.js
-
-// BASE SETUP
-// =============================================================================
-
-// call the packages we need
-var express    = require('express');        // call express
+var express    = require('express');
 var bodyParser = require('body-parser');
+var fs = require('fs')
+var morgan = require('morgan')
 
-var app        = express();                 // define our app using express
+var app    = express();
+var router = express.Router();
 
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
-
-// configure app to use bodyParser()
-// this will let us get the data from a POST
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-var port = process.env.PORT || 8080;        // set our port
-
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();              // get an instance of the express Router
-
-app.use(function(req, res, next){
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method == 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
-});
-
-app.use(function(req, res, next){
-
-    var lang = req.headers["content-language"];
-
-    var supportedLanguages = alfehrest.helpers.settings.get('general').languages;
-    if(supportedLanguages.indexOf(lang) == -1){
-        res.sendStatus(400);
-        return;
-    }
-    alfehrest.currentLanguage = lang;
-    next();
-});
-
-app.use(function(req, res, next){
-    req.app.errors = require("./errors.js").load(app);
-    next();
-});
-
-
-//global['_'] = gettext.gettext;
-global.alfehrest = {
+global.framework = {
     app: app,
     mainLanguage: 'ar',
     currentLanguage : 'ar',
     rootPath: require('path').resolve(__dirname),
     env: "dev",
+    error: require('./errors/AppError.js'),
     helpers: {
         path       : require("./helpers/PathHelper.js"),
         model      : require("./helpers/ModelHelper.js"),
@@ -71,14 +22,64 @@ global.alfehrest = {
     }
 };
 
+if (typeof String.prototype.startsWith != 'function') {
+    String.prototype.startsWith = function (str){
+        return this.indexOf(str) === 0;
+    };
+}
+
+var logDirectory = __dirname + '/log';
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
+
+var accessLogStream = fs.createWriteStream(logDirectory + '/access.log', {flags: 'a'})
+var errorLogStream = fs.createWriteStream(logDirectory + '/error.log', {flags: 'a'})
+
+app.use(morgan('combined', {stream: accessLogStream}));
+app.use(morgan('combined', {stream: errorLogStream, skip: function (req, res) { return res.statusCode < 400 }}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(function(req, res, next){
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method == 'OPTIONS') {
+        res.sendStatus(200);
+        return;
+    }
+    next();
+});
+app.use(function(req, res, next){
+
+    var lang = req.headers["content-language"];
+
+    var supportedLanguages = framework.helpers.settings.get('general').languages;
+    if(supportedLanguages.indexOf(lang) == -1) {
+        next(framework.error(1, 400, 'Invalid language code'));
+        return;
+    }
+    framework.currentLanguage = lang;
+    next();
+});
 app.use('/api', router);
+app.use(function(err, req, res, next){
+
+    var errorObject = {
+        'code'   : err.code,
+        'message': err.message
+    };
+
+    if(global.framework.env == 'dev') {
+        errorObject.stack = err.stack;
+    }
+    console.error(errorObject.stack);
+
+    res.status(err.httpCode).send(errorObject);
+});
 
 require('./controllers').load(app, router);
 
-// START THE SERVER
-// =============================================================================
+var port = process.env.PORT || 8080;
+
 app.listen(port);
-
 module.exports = app;
-
 console.log('Magic happens on port ' + port);

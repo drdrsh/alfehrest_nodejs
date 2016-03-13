@@ -2,7 +2,7 @@ var PathHelper = {};
 
 function constructPath(directory, entityName) {
     //TODO: Allow deeper paths
-    var pathParts = [alfehrest.rootPath, directory];
+    var pathParts = [framework.rootPath, directory];
     if(entityName && entityName != null){
         if(!entityName.toLowerCase().endsWith(".js")){
             entityName = "" + entityName + ".js";

@@ -12,7 +12,7 @@ function PersonModel() {
 
     this.getRelationshipSchema = function() {
 
-        var relDef = alfehrest.helpers.library.getInstance("RelationshipDefinition", this.getEntityName());
+        var relDef = framework.helpers.library.getInstance("RelationshipDefinition", this.getEntityName());
 
         var genericFields = {
             comments: {

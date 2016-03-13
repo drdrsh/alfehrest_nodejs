@@ -1,18 +1,19 @@
-var q = require('q');
 
 function EntityController(app, router) {
 
-    var language = alfehrest.currentLanguage;
+    var language = framework.currentLanguage;
 
     var getEntityName = this.getEntityName || function() { return null; };
 
-    function getDatabase() { return alfehrest.helpers.model.getDatabase(); }
+    function getDatabase() { return framework.helpers.model.getDatabase(); }
 
-    function loadEntityModel(entityName) { return alfehrest.helpers.model.get(entityName); }
+    function loadEntityModel(entityName) { return framework.helpers.model.get(entityName); }
 
     function loadModel() { return loadEntityModel(getEntityName());}
 
-    function post(req, res) {
+    function post(req, res, next) {
+
+        //TODO : Make creation transactional
 
         var model = loadModel();
 
@@ -20,10 +21,9 @@ function EntityController(app, router) {
         delete req.body.relationships;
 
         var newEntityId = null;
-        model
-            .create(language, req.body)
-            .then(function (data) {
-
+        model.create(language, req.body)
+        .then(
+            data => {
                 newEntityId = data.id;
 
                 if(!relationships){
@@ -36,58 +36,52 @@ function EntityController(app, router) {
                 }
 
                 var model = loadEntityModel('relationship');
-                model
-                    .create(language, newEntityId, relationships, false)
-                    .then(function(data) {
-                        res.send({id: newEntityId});
-                    })
-                    .fail(function(err){
-                        res.status(err.code).send(err.message);
-                    });
-            })
-            .fail(function(err){
-                res.status(err.code).send(err.message);
-            });
+                return model.create(language, newEntityId, relationships, false);
+            },
+            err => { next(err); }
+        )
+        .then(
+            data => { res.send({id: newEntityId})},
+            err => { next(err); }
+        );
+
     }
 
-    function getAll(req, res) {
+    function getAll(req, res, next) {
 
         var model = loadModel();
 
-        model.getAll(language).then(function(data){
-            res.send(data);
-        }).fail(function(error){
-            res.send(error);
-        });
+        model.getAll(language).then(
+            data => { res.send(data); },
+            err => { next(err); }
+        );
 
     }
 
-    function getOne(req, res) {
+    function getOne(req, res, next) {
 
         var id = req.params.id;
         var entityType = getEntityName();
-        if(!id.startsWith(entityType)){
-            res.status(404).send("Not Found");
-            return;
+        if(!id.startsWith(entityType)) {
+            return next(framework.error(1, 404, 'Not Found'));
         }
 
         var model = loadModel();
 
-        model.getOne(language, id).then(function(data){
-            res.send(data);
-        }).fail(function(err){
-            res.status(err.code).send(err.message);
-        });
+        model.getOne(language, id)
+        .then(
+            data => { res.send(data); },
+            err => { next(err); }
+        );
 
     }
 
-    function update(req, res){
+    function update(req, res, next){
 
         var id = req.body.id;
         var entityType = getEntityName();
         if(!id.startsWith(entityType)){
-            res.status(404).send("Not Found");
-            return;
+            return next(framework.error(1, 404, 'Not Found'));
         }
 
         var entityModel = loadModel();
@@ -96,48 +90,44 @@ function EntityController(app, router) {
         var incomingRelationships = req.body.relationships;
         delete req.body.relationships;
 
-        q.all([
+        Promise.all([
             entityModel.update(language, id, req.body),
             relationshipModel.update(language, id, incomingRelationships)
         ])
-        .then((results) => {
-            res.status(204).send();
-        })
-        .fail(function(err){
-            res.status(err.code).send(err.message);
-        });
+        .then(
+            results => { res.status(204).send(); },
+            err => { next(err); }
+        );
 
     }
 
-    function remove(req, res){
+    function remove(req, res, next){
 
         var id = req.body.id;
         var entityType = getEntityName();
         if(!id.startsWith(entityType)){
-            res.status(404).send("Not Found");
-            return;
+            return next(framework.error(1, 404, 'Not Found'));
         }
 
         var model = loadModel();
 
-
-        model.remove(id).then(function(data){
-            res.status(204).send();
-        }).fail(function(err){
-            res.status(err.code).send(err.message);
-        })
+        model.remove(id).then(
+            data => { res.status(204).send(); },
+            err => { next(err); }
+        );
 
     }
 
-    function getSchema(req, res) {
+    function getSchema(req, res, next) {
 
         var entityType = getEntityName();
         var db = getDatabase();
+        var model = loadModel();
 
-        loadModel().getPreparedRelationshipSchema(language)
-            .then(function(data){
-                res.send(data);
-            });
+        model.getPreparedRelationshipSchema(language).then(
+            data => { res.send(data); },
+            err => { next(err); }
+        );
 
     }
 

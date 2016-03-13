@@ -5,7 +5,7 @@ var path = require("./PathHelper.js");
 SettingsHelper.get = function(file, key) {
 
     var config = require(path.settings(file));
-    var env = alfehrest.env;
+    var env = framework.env;
 
     if( !(env in config) ){
         throw new Error(`No configurations were found for environment ${env} in config file ${config}`);

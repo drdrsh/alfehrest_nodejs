@@ -1,13 +1,11 @@
-var q = require('q');
 var uniqueIdGenerator = require('shortid');
 
-var cfg = alfehrest.helpers.settings.get("database");
-var modelHelper = alfehrest.helpers.model;
+var cfg = framework.helpers.settings.get("database");
+var modelHelper = framework.helpers.model;
 var db = modelHelper.getDatabase();
 
 function create(language, props) {
 
-    var deferred = q.defer();
     var className = this.getEntityName().toLowerCase();
 
     //TODO : should double check if random id already exists
@@ -17,28 +15,16 @@ function create(language, props) {
     props._key = props.id;
     props._entity_type = className;
 
-
-    db.collection(cfg.entity_collection).save(props).then(
-        //Success
-        function(result) {
-            deferred.resolve({id : props.id});
-        },
-        //Failure
-        function(err) {
-            deferred.reject({
-                id : err.num,
-                code: err.code,
-                message: err.message
-            });
-        }
-    );
-
-    return deferred.promise;
+    return new Promise(function(resolve, reject){
+        db.collection(cfg.entity_collection).save(props).then(
+            result => { resolve({id : props.id}); },
+            err => { reject(err); }
+        );
+    });
 }
 
 function update(language, id, data) {
 
-    var deferred = q.defer();
     var entityName = this.getEntityName();
     var eCol = cfg.entity_collection;
 
@@ -46,17 +32,11 @@ function update(language, id, data) {
     data = JSON.stringify(modelHelper.cleanForm(this.getEntitySchema(), language, data, true));
 
     var query = `UPDATE '${id}' WITH ${data} IN ${eCol}`;
-    modelHelper.executeQuery(query)
-        .then(() => deferred.resolve())
-        .fail(() => deferred.reject());
 
-    return deferred.promise;
-
+    return modelHelper.executeQuery(query);
 }
 
 function remove(id) {
-
-    var deferred = q.defer();
 
     var eCol = cfg.entity_collection;
     var rCol = cfg.relation_collection;
@@ -70,17 +50,11 @@ function remove(id) {
     );
     queries.push(`REMOVE '${id}' IN ${eCol}`);
 
-    modelHelper.executeQueries(queries)
-        .then(() => {deferred.resolve()})
-        .fail(() => {deferred.reject()});
-
-    return deferred.promise;
-
+    return modelHelper.executeQueries(queries);
 }
 
 function getOne(language, id) {
 
-    var deferred = q.defer();
     var eCol = cfg.entity_collection;
     var rCol = cfg.relation_collection;
 
@@ -97,35 +71,37 @@ function getOne(language, id) {
         }
     }`;
 
-    modelHelper.getOneRecord(query).then(
+    return new Promise(function(resolve, reject){
+        modelHelper.getOneRecord(query).then(
             record => {
-            var modelHelper = alfehrest.helpers.model;
-            if(record.entity){
-                record.entity = modelHelper.detranslateObject(record.entity, language);
-                for(var idx in record.relationships) {
-                    for(var i=0; i<record.relationships[idx].length; i++) {
-                        record.relationships[idx][i] = modelHelper.detranslateObject(record.relationships[idx][i], language);
-                        record.relationships[idx][i]['id'] = record.relationships[idx][i]['_key'];
-                        delete record.relationships[idx][i]['_from'];
-                        delete record.relationships[idx][i]['_to'];
-                        delete record.relationships[idx][i]['_rev'];
-                        delete record.relationships[idx][i]['_id'];
+                var modelHelper = framework.helpers.model;
+                if(record.entity){
+                    try {
+                        record.entity = modelHelper.detranslateObject(record.entity, language);
+                        for (var idx in record.relationships) {
+                            for (var i = 0; i < record.relationships[idx].length; i++) {
+                                record.relationships[idx][i] = modelHelper.detranslateObject(record.relationships[idx][i], language);
+                                record.relationships[idx][i]['id'] = record.relationships[idx][i]['_key'];
+                                delete record.relationships[idx][i]['_from'];
+                                delete record.relationships[idx][i]['_to'];
+                                delete record.relationships[idx][i]['_rev'];
+                                delete record.relationships[idx][i]['_id'];
+                            }
+                        }
+                    } catch (e) {
+                        return reject(e);
                     }
                 }
-            }
-            deferred.resolve(record);
-        },
-        () => {
+                resolve(record);
+            },
+            err => {reject(err)}
+        );
+    });
 
-        }
-    );
-
-    return deferred.promise;
 }
 
 function getAll(language) {
 
-    var deferred = q.defer();
     var entityName = this.getEntityName();
     var nameField = this.getNameField();
     var eCol = cfg.entity_collection;
@@ -136,14 +112,7 @@ function getAll(language) {
         RETURN {id: e.id, name: e.strings['${language}']['${nameField}'], entity_type: e._entity_type}
     `;
 
-    modelHelper.getAllRecords(query)
-        .then(
-            records => {
-            deferred.resolve(records);
-        }
-    );
-
-    return deferred.promise;
+    return modelHelper.getAllRecords(query);
 }
 
 function getEntityName() { return "Node"; }
@@ -156,42 +125,43 @@ function getEntitySchema() { return {}; }
 
 function getPreparedRelationshipSchema(language) {
 
-    var deferred = q.defer();
     var entitySchema = this.getEntitySchema();
     var relationshipSchema = this.getRelationshipSchema();
 
-    getAllIds(language).then(function (data) {
-        var entityCache = data;
-        var list = {};
+    return new Promise(function(resolve, reject){
+        getAllIds(language).then(
+            data => {
+                var entityCache = data;
+                var list = {};
 
-        for(var idx in relationshipSchema) {
+                for(var idx in relationshipSchema) {
 
-            list[idx] = {
-                "secondEntityId": {
-                    label: 'الكيان المرتبط',
-                    type: 'List',
-                    elements: entityCache[idx] || []
-                },
-                "types": relationshipSchema[idx]
-            };
+                    list[idx] = {
+                        "secondEntityId": {
+                            label: 'الكيان المرتبط',
+                            type: 'List',
+                            elements: entityCache[idx] || []
+                        },
+                        "types": relationshipSchema[idx]
+                    };
 
-        }
+                }
 
-        deferred.resolve({
-            "entity": entitySchema,
-            "relationships": list
-        });
+                resolve({
+                    "entity": entitySchema,
+                    "relationships": list
+                });
 
+            },
+            err => {reject(err)}
+        );
     });
-
-    return deferred.promise;
 }
 
 
 
 function getAllIds(language) {
 
-    var deferred = q.defer();
     var eCol = cfg.entity_collection;
     var results = {};
 
@@ -200,22 +170,22 @@ function getAllIds(language) {
         RETURN {id: e.id, name: e.strings['${language}']['name'], entity_type: e._entity_type}
     `;
 
-    modelHelper.getAllRecords(query)
-        .then(
-            records => {
-                for(var i=0; i<records.length; i++) {
-                    var record = records[i];
-                    if(!results[record.entity_type]) {
-                        results[record.entity_type] = {}
+    return new Promise(function(resolve, reject){
+        modelHelper.getAllRecords(query)
+            .then(
+                records => {
+                    for(var i=0; i<records.length; i++) {
+                        var record = records[i];
+                        if(!results[record.entity_type]) {
+                            results[record.entity_type] = {}
+                        }
+                        results[record.entity_type][record.id] = record.name;
                     }
-                    results[record.entity_type][record.id] = record.name;
-                }
-                deferred.resolve(results);
-            }
-        );
-
-    return deferred.promise;
-
+                    resolve(results);
+                },
+                err => {reject(err)}
+            );
+    });
 }
 
 function EntityModel() {

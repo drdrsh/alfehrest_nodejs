@@ -1,6 +1,5 @@
 var ModelHelper = {};
 
-var q = require('q');
 var path = require("./PathHelper.js");
 
 ModelHelper.get = function(entityName) {
@@ -9,12 +8,10 @@ ModelHelper.get = function(entityName) {
 };
 
 ModelHelper.getDatabase = function(){
-
-    var dbSettings = alfehrest.helpers.settings.get("database");
+    var dbSettings = framework.helpers.settings.get("database");
     var db = (require('arangojs'))(dbSettings.url);
     db.useDatabase(dbSettings.name);
     return db;
-
 };
 
 ModelHelper.detranslateObject= function(obj, language) {
@@ -25,10 +22,10 @@ ModelHelper.detranslateObject= function(obj, language) {
     var missingLanguage = false;
     if(!activeLanguage in obj.strings) {
         missingLanguage = true;
-        if(! alfehrest.mainLanguage in obj.strings){
-            throw new Error("Failed to load strings!");
+        if(! framework.mainLanguage in obj.strings){
+            throw framework.error(1, 500, 'Failed to load strings!');
         }
-        activeLanguage = alfehrest.mainLanguage
+        activeLanguage = framework.mainLanguage
     }
 
     for(var idx in obj.strings[activeLanguage]) {
@@ -53,7 +50,7 @@ ModelHelper.cleanForm = function(schema, language, inputs, update){
         var missingValue = !(idx in inputs);
 
         if(missingValue && !update && field.required) {
-            throw new Error("Missing required field " + idx);
+            throw framework.error(1, 400, `Missing required field ${idx}`);
         }
 
         var value = field.default;
@@ -77,80 +74,68 @@ ModelHelper.cleanForm = function(schema, language, inputs, update){
 };
 
 ModelHelper.executeQueries = function(queries) {
-    var deferred = q.defer();
+    return new Promise(function(resolve, reject){
+        var db = ModelHelper.getDatabase();
+        var dbSettings = framework.helpers.settings.get("database");
 
-    var db = this.getDatabase();
-    var dbSettings = alfehrest.helpers.settings.get("database");
+        var action = String(function () {
+            var db = require('org/arangodb').db;
+            //#Q#//
+            for(var i=0; i<queries.length; i++) {
+                db._query(queries[i]);
+            }
+        });
+        action = action.replace("//#Q#//", "var queries=" + JSON.stringify(queries) + ";");
+        db.transaction({write: [dbSettings.entity_collection, dbSettings.relation_collection]}, action)
+            .then(
+                result => { resolve(); },
+                err => { reject(framework.error(err)); }
+            );
 
-    var action = String(function () {
-        var db = require('org/arangodb').db;
-        //#Q#//
-        for(var i=0; i<queries.length; i++) {
-            db._query(queries[i]);
-        }
     });
-    action = action.replace("//#Q#//", "var queries=" + JSON.stringify(queries) + ";");
-    db.transaction({write: [dbSettings.entity_collection, dbSettings.relation_collection]}, action)
-        .then(
-            result => { deferred.resolve() },
-            () => { deferred.reject() }
-         );
-
-    return deferred.promise;
 };
 
 ModelHelper.executeQuery = function(query){
-    var deferred = q.defer();
-
-    this.getDatabase().query(query)
-        .then(
-        ()  => {deferred.resolve()},
-        () => {deferred.reject()}
-    );
-    return deferred.promise;
+    return new Promise(function(resolve, reject) {
+        this.getDatabase().query(query)
+            .then(
+                () => { resolve(); },
+                err => { reject(framework.error(err)); }
+            );
+    });
 };
 
 ModelHelper.getOneRecord = function(query){
-    var deferred = q.defer();
-
-    this.getDatabase().query(query)
-        .then(
-            cursor => {
-            cursor.all().then(
-                    records => {
-                    var record = (records.length==0)?null:records[0];
-                    deferred.resolve(record);
-                }
-            )
-        },
-        () => {
-            deferred.reject()
-        }
-    );
-
-    return deferred.promise;
+    return new Promise(function(resolve, reject) {
+        ModelHelper.getDatabase().query(query)
+            .then(
+                cursor => {
+                    cursor.all().then(
+                        records => {
+                            var record = (records.length==0)?null:records[0];
+                            resolve(record);
+                        },
+                        err => { reject(framework.error(err)); }
+                    )
+                },
+                err => { reject(framework.error(err)); }
+            );
+    });
 };
 
 ModelHelper.getAllRecords = function(query){
-
-    var deferred = q.defer();
-
-    this.getDatabase().query(query)
-        .then(
-            cursor => {
-            cursor.all().then(
-                    records => {
-                    deferred.resolve(records);
-                }
-            )
-        },
-        () => {
-            deferred.reject()
-        }
-    );
-
-    return deferred.promise
-
+    return new Promise(function(resolve, reject) {
+        ModelHelper.getDatabase().query(query)
+            .then(
+                cursor => {
+                    cursor.all().then(
+                        records => { resolve(records); },
+                        err => { reject(framework.error(err)); }
+                    )
+                },
+                err => { reject(framework.error(err)) }
+            );
+    });
 };
 
 module.exports = ModelHelper;
