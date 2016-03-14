@@ -101,16 +101,15 @@ function updateCurrentRelationships(language, entityId, incomingRelationships, c
 
     var relationshipKeys = {};
     for(let i=0; i<currentRelationships.length; i++) {
-        var rel = currentRelationships[i];
+        let rel = currentRelationships[i];
         relationshipKeys[rel['_key']] = false;
     }
 
     for(let i=0; i<incomingRelationships.length; i++) {
-        var rel = incomingRelationships[i];
+        let rel = incomingRelationships[i];
         if(rel['id'] != '' ) {
             if(!rel['id'] in relationshipKeys) {
-                deferred.reject();
-                return;
+                return Promise.reject(framework.error(1, 400, 'Invalid relationship'));
             }
             relationshipKeys[rel['id']] = true;
             updates.push(rel);
@@ -135,21 +134,21 @@ function updateCurrentRelationships(language, entityId, incomingRelationships, c
 
     var queries = [];
     queries.push(`
-            LET insertions = ${insertions}
-            FOR record_1 IN insertions
-            INSERT record_1 IN ${rCol}
-            `);
+        LET insertions = ${insertions}
+        FOR record_1 IN insertions
+        INSERT record_1 IN ${rCol}
+    `);
 
     queries.push(`
-            LET updates = ${updates}
-                FOR record_2 IN updates
-                    UPDATE record_2._key WITH record_2 IN ${rCol}
-            `)
+        LET updates = ${updates}
+            FOR record_2 IN updates
+                UPDATE record_2._key WITH record_2 IN ${rCol}
+    `);
 
     queries.push(`
-            LET deletions = ${deletions}
-            FOR id IN deletions
-                REMOVE id IN ${rCol}`
+        LET deletions = ${deletions}
+        FOR id IN deletions
+            REMOVE id IN ${rCol}`
     );
 
     return modelHelper.executeQueries(queries);
@@ -164,7 +163,7 @@ function update(language, entityId, incomingRelationships) {
                 currentRelationships => {
                     updateCurrentRelationships(language, entityId, incomingRelationships, currentRelationships)
                     .then(
-                        () => {resolve(); },
+                        () => { resolve(); },
                         err => { reject(err); }
                     );
                 },
@@ -190,7 +189,7 @@ function getAll(language, entityId) {
             records => {
                 try {
                     for (var i = 0; i < records.length; i++) {
-                        records[i] = modelHelper.detranslateObject(records[i]);
+                        records[i] = modelHelper.detranslateObject(records[i], langauge);
                     }
                 } catch(e) {
                     return reject(e);

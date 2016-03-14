@@ -1,5 +1,6 @@
 'use strict';
 
+var rand   = require('shortid');
 var assert = require('assert');
 var http   = require('http');
 var request= require('superagent');
@@ -57,11 +58,12 @@ describe('person', function () {
 
     describe('#create_valid', function () {
         var newId = null;
-        it('Creates valid object', function (done) {
+        var newObject = null;
+        it('Create valid object', function (done) {
             request
                 .post(rootURL + 'person')
-                .set('content-language', 'ar')
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json')))
+                .set('content-language', 'ar')
                 .end(function (err, r) {
                     newId = r.res.body.id;
                     assert.equal(r.res.statusCode, 200);
@@ -69,7 +71,7 @@ describe('person', function () {
                 });
         });
 
-        it('Read valid entity Object', function (done) {
+        it('Read valid entity', function (done) {
             request
                 .get(rootURL + 'person/' + newId + '/')
                 .set('content-language', 'ar')
@@ -89,13 +91,37 @@ describe('person', function () {
                         } else {
                             assert.equal(orgValue, act[idx1]);
                         }
-
                     }
+                    newObject = act;
                     done();
                 });
         });
 
-        it('Delete Object', function (done) {
+        it('Update entity', function (done) {
+            newObject.bio = rand.generate();
+            request
+                .put(rootURL + 'person/' + newId + '/')
+                .set('content-language', 'ar')
+                .send(newObject)
+                .end(function (err, r) {
+                    assert.equal(r.status, 204);
+                    done();
+                });
+        });
+
+        it('Read updated entity', function (done) {
+            request
+                .get(rootURL + 'person/' + newId + '/')
+                .set('content-language', 'ar')
+                .end(function (err, r) {
+                    var act = r.res.body.entity;
+                    assert.equal(r.res.statusCode, 200);
+                    assert.equal(newObject.bio, act.bio);
+                    done();
+                });
+        });
+
+        it('Delete entity', function (done) {
             request
                 .delete(rootURL + 'person/')
                 .set('content-language', 'ar')
@@ -106,7 +132,7 @@ describe('person', function () {
                 });
         });
 
-        it('Reads the deleted Object', function (done) {
+        it('Reads deleted entity', function (done) {
             request
                 .get(rootURL + 'person/' + newId + '/')
                 .set('content-language', 'ar')

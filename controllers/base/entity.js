@@ -87,7 +87,7 @@ function EntityController(app, router) {
         var entityModel = loadModel();
         var relationshipModel = loadEntityModel('relationship');
 
-        var incomingRelationships = req.body.relationships;
+        var incomingRelationships = req.body.relationships || [];
         delete req.body.relationships;
 
         Promise.all([
