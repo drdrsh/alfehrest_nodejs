@@ -60,7 +60,7 @@ ModelHelper.cleanForm = function(schema, language, inputs, update){
 
         if(typeof field.validation == "function" && !missingValue) {
             //Throws an exception on error;
-            field.validation(value, inputs);
+            field.validation(idx, value, inputs);
         }
 
         if(field.translatable) {

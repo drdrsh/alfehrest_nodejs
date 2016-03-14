@@ -36,6 +36,7 @@ function prepareRelationshipData(language, parentId, data, isUpdate) {
         }
 
         var relationshipSubtype = relationshipType.split('.').pop();
+
         //Look for relationship schema that matches this kind of relationship
         var relationshipFields = {};
         try {
@@ -44,8 +45,12 @@ function prepareRelationshipData(language, parentId, data, isUpdate) {
             throw framework.error(1, 400, "Unsupported relationship type");
         }
 
-        //Validate and restructure the incoming data
-        var relationshipProperties = modelHelper.cleanForm(relationshipFields, language, relItem);
+        try {
+            //Validate and restructure the incoming data
+            var relationshipProperties = modelHelper.cleanForm(relationshipFields, language, relItem);
+        } catch(e) {
+            throw e;
+        }
 
         relationshipProperties.firstEntityId = firstEntityId;
         relationshipProperties.secondEntityId= secondEntityId;

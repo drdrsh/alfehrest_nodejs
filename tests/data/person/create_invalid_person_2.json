@@ -1,0 +1,29 @@
+{
+  "id": "",
+  "name": "محمود جعفر السعيد",
+  "titles": [
+    "البرنس المجنح",
+    "سابق سنة القوي"
+  ],
+  "nicknames": [
+    "أبو نشوى",
+    "أبو تكاثر"
+  ],
+  "bio": "خلينا نتكلم كفنيين",
+  "revisionState": "as",
+  "born": {
+    "mode": "between",
+    "first_date": 1948439.5,
+    "second_date": 1948456.5
+  },
+  "died": {
+    "mode": "approx",
+    "first_date": 1948458.5,
+    "second_date": ""
+  },
+  "references": [
+    "مرجع س 1",
+    "مرجع ج 2"
+  ],
+  "relationships": []
+}

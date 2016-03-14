@@ -10,7 +10,11 @@ function create(language, props) {
 
     //TODO : should double check if random id already exists
     props.id   = this.getEntityName() + "_" + uniqueIdGenerator.generate();
-    props = modelHelper.cleanForm(this.getEntitySchema(), language, props);
+    try {
+        props = modelHelper.cleanForm(this.getEntitySchema(), language, props);
+    } catch(e) {
+        return Promise.reject(e);
+    }
 
     props._key = props.id;
     props._entity_type = className;
@@ -25,11 +29,16 @@ function create(language, props) {
 
 function update(language, id, data) {
 
+    delete data['id'];
+
     var entityName = this.getEntityName();
     var eCol = cfg.entity_collection;
 
-    delete data['id'];
-    data = JSON.stringify(modelHelper.cleanForm(this.getEntitySchema(), language, data, true));
+    try {
+        data = JSON.stringify(modelHelper.cleanForm(this.getEntitySchema(), language, data, true));
+    } catch(e) {
+        return Promise.reject(e);
+    }
 
     var query = `UPDATE '${id}' WITH ${data} IN ${eCol}`;
 
@@ -75,7 +84,7 @@ function getOne(language, id) {
         modelHelper.getOneRecord(query).then(
             record => {
                 var modelHelper = framework.helpers.model;
-                if(record.entity){
+                if(record.entity) {
                     try {
                         record.entity = modelHelper.detranslateObject(record.entity, language);
                         for (var idx in record.relationships) {
@@ -91,6 +100,8 @@ function getOne(language, id) {
                     } catch (e) {
                         return reject(e);
                     }
+                } else {
+                    return reject(framework.error(1, 404, 'Not Found'));
                 }
                 resolve(record);
             },
