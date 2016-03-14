@@ -17,26 +17,26 @@ function PersonModel() {
     this.getRelationshipSchema = function () {
 
         var fields = null;
-        var relDef = framework.helpers.library.getInstance("RelationshipDefinition", this.getEntityName());
+        var relDef = framework.helpers.library.create("RelationshipDefinition", this.getEntityName());
         var formDef = null;
 
-        formDef = framework.helpers.library.getInstance("FormDefinition");
+        formDef = framework.helpers.library.create("FormDefinition");
         formDef.addComment();
         formDef.addRef();
 
         var relationships = ["interested_in", "wrote_about", "died_in", "took_part_in"];
-        for (var i = 0; i < relationships.length; i++) {
+        for (let i = 0; i < relationships.length; i++) {
             //TODO: send proper translation based on request language
             relDef.addRelationship("event", relationships[i], relationships[i], formDef.getSchema());
         }
 
-        formDef = framework.helpers.library.getInstance("FormDefinition");
+        formDef = framework.helpers.library.create("FormDefinition");
         formDef.addDatePair(['dateStarted', 'dateEnded'], ['البدء', 'النهاية'], [false, false]);
         formDef.addComment();
         formDef.addRef();
 
-        relationships = ["in_law", "marriage", "khal", "am",]
-        for (var i = 0; i < relationships.length; i++) {
+        relationships = ["in_law", "marriage", "khal", "am"];
+        for (let i = 0; i < relationships.length; i++) {
             relDef.addRelationship("person", relationships[i], relationships[i], formDef.getSchema());
         }
 
@@ -69,7 +69,7 @@ function PersonModel() {
 
     this.getEntitySchema = function () {
 
-        var formDef = framework.helpers.library.getInstance("FormDefinition");
+        var formDef = framework.helpers.library.create("FormDefinition");
 
         formDef.addId();
         formDef.add('name', {

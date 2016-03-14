@@ -173,12 +173,21 @@ function getPreparedRelationshipSchema(language) {
 
 function getAllIds(language) {
 
-    var eCol = cfg.entity_collection;
-    var results = {};
+    var generalSettings = framework.helpers.settings.get("general");
+    var nameFields = {};
+    for(var i=0; i<generalSettings.entities.length; i++) {
+        var model = framework.helpers.model.get(generalSettings.entities[i]);
+        nameFields[generalSettings.entities[i]] = model.getNameField();
+    }
 
+    var nameFieldObj = JSON.stringify(nameFields);
+    var eCol = cfg.entity_collection;
+
+    var results = {};
     var query = `
+        LET nameFields = ${nameFieldObj}
         FOR e in ${eCol}
-        RETURN {id: e.id, name: e.strings['${language}']['name'], entity_type: e._entity_type}
+        RETURN {id: e.id, name: e.strings['${language}'][nameFields[e._entity_type]], entity_type: e._entity_type}
     `;
 
     return new Promise(function(resolve, reject){
@@ -208,6 +217,7 @@ function EntityModel() {
     this.getAll = getAll;
 
     this.getEntityName = getEntityName;
+    this.getNameField  = getNameField;
     this.getRelationshipSchema = getRelationshipSchema;
     this.getEntitySchema = getEntitySchema;
 

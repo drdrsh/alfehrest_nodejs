@@ -2,8 +2,8 @@ var ModelHelper = {};
 
 var path = require("./PathHelper.js");
 
-ModelHelper.get = function(entityName) {
-    var entityName = entityName.charAt(0).toUpperCase() + entityName.substr(1);
+ModelHelper.get = function(e) {
+    var entityName = e.charAt(0).toUpperCase() + e.substr(1);
     return require(path.models(entityName)).getInstance();
 };
 
@@ -18,11 +18,16 @@ ModelHelper.detranslateObject= function(obj, language) {
     //Move strings from strings array to the root object
     //If language is not available e.g, object not translated in that language yet, we use the main lang as template
     //If the main language isn't available then we an error
-    var activeLanguage = language
+    var activeLanguage = language;
     var missingLanguage = false;
+
+    if(!obj.strings) {
+        return obj;
+    }
+
     if(!activeLanguage in obj.strings) {
         missingLanguage = true;
-        if(! framework.mainLanguage in obj.strings){
+        if(! framework.mainLanguage in obj.strings) {
             throw framework.error(1, 500, 'Failed to load strings!');
         }
         activeLanguage = framework.mainLanguage

@@ -31,8 +31,8 @@ if (typeof String.prototype.startsWith != 'function') {
 var logDirectory = __dirname + '/log';
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
 
-var accessLogStream = fs.createWriteStream(logDirectory + '/access.log', {flags: 'a'})
-var errorLogStream = fs.createWriteStream(logDirectory + '/error.log', {flags: 'a'})
+var accessLogStream = fs.createWriteStream(logDirectory + '/access.log', {flags: 'a'});
+var errorLogStream = fs.createWriteStream(logDirectory + '/error.log', {flags: 'a'});
 
 app.use(morgan('combined', {stream: accessLogStream}));
 app.use(morgan('combined', {stream: errorLogStream, skip: function (req, res) { return res.statusCode < 400 }}));
@@ -54,8 +54,7 @@ app.use(function(req, res, next){
 
     var supportedLanguages = framework.helpers.settings.get('general').languages;
     if(supportedLanguages.indexOf(lang) == -1) {
-        next(framework.error(1, 400, 'Invalid language code'));
-        return;
+        return next(framework.error(1, 400, 'Invalid language code'));
     }
     framework.currentLanguage = lang;
     next();
