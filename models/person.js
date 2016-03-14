@@ -13,7 +13,6 @@ function PersonModel() {
         return "name"
     };
 
-
     this.getRelationshipSchema = function () {
 
         var fields = null;
@@ -24,10 +23,23 @@ function PersonModel() {
         formDef.addComment();
         formDef.addRef();
 
-        var relationships = ["interested_in", "wrote_about", "died_in", "took_part_in"];
+        var relationships = ["related"];
+        for (let i = 0; i < relationships.length; i++) {
+            //TODO: send proper translation based on request language
+            relDef.addRelationship("transcript", relationships[i], relationships[i], formDef.getSchema());
+        }
+
+
+        var relationships = ["interested_in", "wrote_about", "died_in", "took_part_in", "related"];
         for (let i = 0; i < relationships.length; i++) {
             //TODO: send proper translation based on request language
             relDef.addRelationship("event", relationships[i], relationships[i], formDef.getSchema());
+        }
+
+        var relationships = ["sareeh", "montaqel", "mostalhaq", "abd", "mawla"];
+        for (let i = 0; i < relationships.length; i++) {
+            //TODO: send proper translation based on request language
+            relDef.addRelationship("tribe", relationships[i], relationships[i], formDef.getSchema());
         }
 
         formDef = framework.helpers.library.create("FormDefinition");
@@ -35,36 +47,26 @@ function PersonModel() {
         formDef.addComment();
         formDef.addRef();
 
-        relationships = ["in_law", "marriage", "khal", "am"];
+        relationships = ["zawj", "sehr", "related", "other"];
+        for (let i = 0; i < relationships.length; i++) {
+            relDef.addRelationship("person", relationships[i], relationships[i], formDef.getSchema());
+        }
+
+        formDef = framework.helpers.library.create("FormDefinition");
+        formDef.addDatePair(['dateStarted', 'dateEnded'], ['البدء', 'النهاية'], [false, false]);
+        formDef.addComment();
+        formDef.addRef();
+
+        relationships = [
+            "am", "wld_akh", "khal", "wld_okht", "akh_shaqiq", "akh_ab", "akh_om", "waled", "wld",
+            "waled_rada", "wld_rada", "akh_rada", "wld_am_a", "wld_khalh_k", "wld_khal_a", "wld_ama_k",
+            "wld_am_k", "wld_khalh_a"
+        ];
         for (let i = 0; i < relationships.length; i++) {
             relDef.addRelationship("person", relationships[i], relationships[i], formDef.getSchema());
         }
 
         return relDef.getSchema();
-
-        /*
-         'صهر',
-         'زوج',
-         'عم',
-         'ولد أخ',
-         'خال',
-         'ولد أخت',
-         'أخ شقيق',
-         'أخ لأب',
-         'أخ لأم',
-         'والد',
-         'ولد',
-         'والد بالرضاعة',
-         'ولد بالرضاعة',
-         'أخ بالرضاعة',
-         'ولد عم (ع)',
-         'ولد خالة (خ)',
-         'ولد خال (ع)',
-         'ولد عمة (خ)',
-         'ولد عم (خ)',
-         'ولد خاله (ع)',
-         'أخرى'
-         */
     };
 
     this.getEntitySchema = function () {
@@ -95,6 +97,10 @@ function PersonModel() {
 
         return formDef.getSchema();
     };
+
+
+
+
 }
 
 require("util").inherits(PersonModel, BaseModel);

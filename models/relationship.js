@@ -189,7 +189,7 @@ function getAll(language, entityId) {
             records => {
                 try {
                     for (var i = 0; i < records.length; i++) {
-                        records[i] = modelHelper.detranslateObject(records[i], langauge);
+                        records[i] = modelHelper.detranslateObject(records[i], language);
                     }
                 } catch(e) {
                     return reject(e);
