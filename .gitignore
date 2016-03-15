@@ -1,4 +1,11 @@
-node_modules
+node_modules/
+.idea_modules/
+
 /settings/database.js
-*/.idea/workspace.xml 
-*/.idea/tasks.xml
+
+# User-specific stuff:
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml

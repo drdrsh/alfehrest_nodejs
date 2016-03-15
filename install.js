@@ -33,8 +33,8 @@ function dropDatabase(params) {
 }
 
 function createDatabase(params) {
-    var db = params[0];
     var config = params[1];
+    var db = (require('arangojs'))(config.url);
     return new Promise( function(resolve, reject) {
         db.createDatabase(config.name)
             .then(
