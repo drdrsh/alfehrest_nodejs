@@ -1,5 +1,5 @@
 var config = {
-    "dev": {
+    "development": {
         "url"     : "",
         "username": "",
         "password": "",
@@ -10,7 +10,11 @@ var config = {
     },
     "production": {
 
+    },
+    "test": {
+
     }
 };
-
+config.production = config.development;
+config.test = config.development;
 module.exports = config;

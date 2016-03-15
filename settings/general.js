@@ -1,9 +1,15 @@
 var config = {
-    "dev": {
+    "development": {
         "entities" : ["event", "idol", "person", "place", "transcript", "tribe"],
         "languages": ['ar', 'en']
     },
-    "production": {}
+    "production": {
+
+    },
+    "test" : {
+
+    }
 };
-config.production = config.dev;
+config.production = config.development;
+config.test = config.development;
 module.exports = config;

@@ -9,10 +9,15 @@
     "express": "^4.13.4",
     "file-stream-rotator": "0.0.6",
     "morgan": "~1.6.1",
+    "optimist": "^0.6.1",
     "shortid": "~2.2.2"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
     "superagent": "^1.8.0"
+  },
+  "scripts": {
+    "test": "mocha --use_strict ./tests/",
+    "start": "node --use_strict app.js --NODE_ENV dev"
   }
 }

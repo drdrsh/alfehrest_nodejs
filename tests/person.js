@@ -8,7 +8,9 @@ var expect = require('expect.js');
 var fs     = require('fs');
 
 var server = null;
-process.env.port = 500;
+process.env.port = "200";
+process.env.NODE_ENV = "test";
+
 var rootURL = 'localhost:' + process.env.port + '/api/';
 
 

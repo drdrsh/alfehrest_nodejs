@@ -1,3 +1,5 @@
+var argv = require('./arguments.js');
+
 var express    = require('express');
 var bodyParser = require('body-parser');
 var fs         = require('fs');
@@ -11,7 +13,7 @@ global.framework = {
     mainLanguage: 'ar',
     currentLanguage : 'ar',
     rootPath: require('path').resolve(__dirname),
-    env: "dev",
+    env: argv['NODE_ENV'],
     error: require('./errors/AppError.js'),
     helpers: {
         path       : require("./helpers/PathHelper.js"),
@@ -67,19 +69,19 @@ app.use(function(err, req, res, next){
         'message': err.message
     };
 
-    if(global.framework.env == 'dev') {
+    if(global.framework.env == 'development') {
         errorObject.stack = err.stack;
     }
-    console.error(errorObject.stack);
+    if(global.framework.env != 'test') {
+        console.error(errorObject.stack);
+    }
 
     res.status(err.httpCode).send(errorObject);
 });
 
 require('./controllers').load(app, router);
 
-var port = process.env.PORT || 8080;
-
-app.server = app.listen(port);
+app.server = app.listen(argv['port']);
 module.exports = app;
 
-console.log('Magic happens on port ' + port);
+console.log(`AlFehrest Server started on port ${argv.port}`);
