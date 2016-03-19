@@ -10,7 +10,7 @@ services:
 
 before_install:
   - 'docker run -d -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb:latest'
-  - 'sleep 10'
+  - 'sleep 30'
 
 before_script:
   - 'npm install'
