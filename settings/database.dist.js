@@ -1,20 +1,30 @@
 var config = {
     "development": {
-        "url"     : "",
+        "url"     : "http://127.0.0.1:8529",
         "username": "",
         "password": "",
-        "name": "",
-        "graph_name": "",
-        "entity_collection": "",
-        "relation_collection": ""
+        "name": "dev_db",
+        "graph_name": "main_graph",
+        "entity_collection": "entity",
+        "relation_collection": "relation"
     },
     "production": {
-
+        "url"     : "http://127.0.0.1:8529",
+        "username": "",
+        "password": "",
+        "name": "prod_db",
+        "graph_name": "main_graph",
+        "entity_collection": "entity",
+        "relation_collection": "relation"
     },
     "test": {
-
+        "url"     : "http://127.0.0.1:8529",
+        "username": "",
+        "password": "",
+        "name": "test_db",
+        "graph_name": "main_graph",
+        "entity_collection": "entity",
+        "relation_collection": "relation"
     }
 };
-config.production = config.development;
-config.test = config.development;
 module.exports = config;
