@@ -1,3 +1,7 @@
+var argv = require('optimist').argv;
+var databaseSettings = null;
+var mode = 'test';
+var attempts = 0;
 
 function checkDatabase(db, config, force) {
     db.useDatabase(config.name);
@@ -10,11 +14,20 @@ function checkDatabase(db, config, force) {
                         resolve([db, config]);
                     } else {
                         reject({
+                            code: 'ALREADY_EXISTS',
                             message: `Database ${config.name} already exists, use --force to overwrite it`
                         });
                     }
                 },
-                () => { resolve([db, config]); }
+                (err) => {
+                    if(err.code == 'ECONNREFUSED') {
+                        return reject({
+                            code: 'CONNECTION_REFUSED',
+                            message: `Failed to connect to database server`
+                        });
+                    }
+                    resolve([db, config]);
+                }
             );
     });
 
@@ -92,16 +105,25 @@ function createGraph(params) {
 }
 
 function handleError(err) {
-    console.error(`Error: ${err.message}`);
+    throw(err);
+}
+
+
+if(argv._[0]) {
+    mode = argv._[0];
+}
+
+const NUMBER_OF_ATTEMPTS = parseInt(argv.attempts, 10) || 10;
+const ATTEMPT_WAIT = parseInt(argv.wait, 10) || 5000;
+
+if(isNaN(NUMBER_OF_ATTEMPTS) || NUMBER_OF_ATTEMPTS <= 0) {
+    console.error('Invalid number of attempts');
     process.exit(1);
 }
 
-var argv = require('optimist').argv;
-var databaseSettings = null;
-
-var mode = 'test';
-if(argv._[0]) {
-    mode = argv._[0];
+if(isNaN(ATTEMPT_WAIT) || ATTEMPT_WAIT <= 0) {
+    console.error('Invalid waiting time');
+    process.exit(1);
 }
 
 try {
@@ -119,18 +141,28 @@ databaseSettings = databaseSettings[mode];
 
 
 
-var db = (require('arangojs'))(databaseSettings.url);
 
-checkDatabase(db, databaseSettings, argv.force)
-    .then(dropDatabase, handleError)
-    .then(createDatabase, handleError)
-    .then(createCollections, handleError)
-    .then(createGraph, handleError)
-    .then((db, config) => {
-        console.log('Done!');
-        process.exit(0);
-    });
+function attemptConnection() {
+    var db = (require('arangojs'))(databaseSettings.url);
+    checkDatabase(db, databaseSettings, argv.force)
+        .then(dropDatabase, handleError)
+        .then(createDatabase, handleError)
+        .then(createCollections, handleError)
+        .then(createGraph, handleError)
+        .then((db, config) => {
+            console.log('Done!');
+            process.exit(0);
+        }, (err) => {
+            if(err.code === 'CONNECTION_REFUSED' && attempts < NUMBER_OF_ATTEMPTS) {
+                attempts++;
+                console.log(`Connection refused, retrying in ${ATTEMPT_WAIT/1000} seconds (${attempts} out of ${NUMBER_OF_ATTEMPTS})`);
+                setTimeout(attemptConnection, ATTEMPT_WAIT);
 
+            } else {
+                console.error(`Error: ${err.message}`);
+                process.exit(1);
+            }
+        });
+}
 
-
-
+attemptConnection();
