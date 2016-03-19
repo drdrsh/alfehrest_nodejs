@@ -1,7 +1,7 @@
 # AlFehrest ArangoDB and NodeJS Server 
 An [ArrangoDB](http://arangodb.com) and [NodeJS](http://nodejs.org) based AlFehrest server side.
 
-To install you need to have ArangoDB installed and NodeJS. If both are installed start by doing the following
+Before installing you need to have NodeJS and ArangoDB installed. If both are installed start by doing the following
 
 ```shell
 git clone https://github.com/drdrsh/alfehrest_nodejs.git .
@@ -14,7 +14,7 @@ node install.js test
 node install.js development
 ```
 
-You should be done by now, to run the test run
+You should be done by now, to run the tests run
 ```shell
 npm test
 ```
