@@ -13,6 +13,7 @@ global.framework = {
     mainLanguage: 'ar',
     currentLanguage : 'ar',
     rootPath: require('path').resolve(__dirname),
+    args: argv,
     env: argv['NODE_ENV'],
     error: require('./errors/AppError.js'),
     helpers: {
@@ -69,11 +70,12 @@ app.use(function(err, req, res, next){
         'message': err.message
     };
 
-    if(global.framework.env == 'development') {
+    if(framework.env != 'production') {
         errorObject.stack = err.stack;
     }
-    if(global.framework.env != 'test') {
-        console.error(errorObject.stack);
+
+    if(!framework.args['silent']) {
+        console.error(err.stack);
     }
 
     res.status(err.httpCode).send(errorObject);
@@ -84,4 +86,7 @@ require('./controllers').load(app, router);
 app.server = app.listen(argv['port']);
 module.exports = app;
 
-console.log(`AlFehrest Server started on port ${argv.port}`);
+if(!framework.args['silent']) {
+    console.log(`AlFehrest Server started on port ${argv.port}`);
+}
+

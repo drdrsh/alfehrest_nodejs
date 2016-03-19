@@ -10,6 +10,7 @@ var fs     = require('fs');
 var server = null;
 process.env.port = "2000";
 process.env.NODE_ENV = "test";
+process.env.silent = true;
 
 var rootURL = 'localhost:' + process.env.port + '/api/';
 
