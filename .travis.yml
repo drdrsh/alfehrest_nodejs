@@ -12,6 +12,7 @@ before_install:
   - 'sleep 10'
 
 before_script:
+  - 'npm install -g mocha'
   - 'npm install'
   - 'cp ./settings/database.dist.js ./settings/database.js'
   - 'node install.js test --wait 5000 --attempts 10'
