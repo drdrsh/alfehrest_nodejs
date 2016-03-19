@@ -10,13 +10,12 @@ services:
 
 before_install:
   - 'docker run -d -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb:latest'
-  - 'sleep 30'
+  - 'sleep 45'
 
 before_script:
   - 'npm install'
   - 'cp ./settings/database.dist.js ./settings/database.js'
-  - 'node install.js test'
-  
-  
+  - 'node install.js test --wait 5000 --attempts 10'
+
 script:
   - 'npm test'
