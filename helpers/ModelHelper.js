@@ -3,8 +3,7 @@ var ModelHelper = {};
 var path = require("./PathHelper.js");
 
 ModelHelper.get = function(e) {
-    var entityName = e.charAt(0).toUpperCase() + e.substr(1);
-    return require(path.models(entityName)).getInstance();
+    return require(path.models(e)).getInstance();
 };
 
 ModelHelper.getDatabase = function(){
