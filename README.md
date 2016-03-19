@@ -1,7 +1,6 @@
 # AlFehrest ArangoDB and NodeJS Server  [![Build Status](https://travis-ci.org/drdrsh/alfehrest_nodejs.svg?branch=master)](https://travis-ci.org/drdrsh/alfehrest_nodejs)
 An [ArrangoDB](http://arangodb.com) and [NodeJS](http://nodejs.org) based AlFehrest server side app.
 
-## Docker based build
 
 Before installing you need to have NodeJS and ArangoDB installed. If both are installed start by doing the following
 
