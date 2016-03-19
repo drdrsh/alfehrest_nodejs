@@ -2,7 +2,6 @@ sudo: required
 
 language: node_js
 node_js:
-  - '4.0.0'
   - '5.0.0'
 
 services:
@@ -10,7 +9,7 @@ services:
 
 before_install:
   - 'docker run -d -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb:latest'
-  - 'sleep 45'
+  - 'sleep 10'
 
 before_script:
   - 'npm install'
