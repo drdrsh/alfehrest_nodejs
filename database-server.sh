@@ -46,6 +46,6 @@ echo "Done"
 
 echo -n "Starting ArangoDB docker container..."
 
-sudo docker run --name $ENGINE_NAME -p 8529:8529 -d -v $(pwd)/arangodb:/var/lib/arangodb arangodb:2.8.1 > /dev/null 2>&1
+sudo docker run --name $ENGINE_NAME -p 8529:8529 -d -v $(pwd)/data/arangodb:/var/lib/arangodb arangodb:2.8.1 > /dev/null 2>&1
 
 echo "Done"
