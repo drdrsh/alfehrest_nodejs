@@ -18,12 +18,12 @@ cp ./settings/database.dist.js ./settings/database.js
 
 Then fire up the docker arangodb container with the data by running the database-server script
 ```shell
-sudo ./database-server start 
+sudo ./database-server.sh start 
 ```
 
 You should be done by now, to run the tests you need [mocha](http://mochajs.org)
 ```shell
-npm install -g mocha
+sudo npm install -g mocha
 npm test
 ```
 
@@ -38,7 +38,7 @@ npm start
 git clone https://github.com/drdrsh/alfehrest_nodejs.git .
 npm install
 cp ./settings/database.dist.js ./settings/database.js
-docker run -d -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb:latest
+sudo docker run -d -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb:latest
 npm start
 ```
 
