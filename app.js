@@ -1,3 +1,5 @@
+'use strict';
+
 var argv = require('./arguments.js');
 
 var express    = require('express');
@@ -8,28 +10,7 @@ var morgan     = require('morgan');
 var app    = express();
 var router = express.Router();
 
-global.framework = {
-    app: app,
-    mainLanguage: 'ar',
-    currentLanguage : 'ar',
-    rootPath: require('path').resolve(__dirname),
-    args: argv,
-    env: argv['NODE_ENV'],
-    error: require('./errors/AppError.js'),
-    helpers: {
-        path       : require("./helpers/PathHelper.js"),
-        model      : require("./helpers/ModelHelper.js"),
-        library    : require("./helpers/LibraryHelper.js"),
-        controller : require("./helpers/ControllerHelper.js"),
-        settings   : require("./helpers/SettingsHelper.js")
-    }
-};
-
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
+global.framework = require('./framework.js')(app, argv);
 
 var logDirectory = __dirname + '/log';
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
@@ -51,6 +32,24 @@ app.use(function(req, res, next){
     }
     next();
 });
+app.use(function(req, res, next) {
+
+    var allowedRoutes = framework.helpers.settings.get('general', 'no_auth_routes');
+    var currentRoute = req.method.toLowerCase() + ":" + req.url;
+
+    //Route doesn't require authentication
+    if(allowedRoutes.indexOf(currentRoute) != -1) {
+        //proceed
+        return next();
+    }
+
+    if(!framework.helpers.session.isLoggedIn(req)) {
+        return next(framework.error(1, 401, 'Unauthorized'));
+    }
+
+    next();
+});
+
 app.use(function(req, res, next){
 
     var lang = req.headers["content-language"];
@@ -61,14 +60,32 @@ app.use(function(req, res, next){
     }
     framework.currentLanguage = lang;
     next();
+    
 });
+
+app.use(function(req, res, next){
+
+    var lang = req.headers["content-language"];
+
+    var supportedLanguages = framework.helpers.settings.get('general').languages;
+    if(supportedLanguages.indexOf(lang) == -1) {
+        return next(framework.error(1, 400, 'Invalid language code'));
+    }
+    framework.currentLanguage = lang;
+    next();
+
+});
+
 app.use('/api', router);
 app.use(function(err, req, res, next){
 
+    var nodeErrorLogStream = fs.createWriteStream(logDirectory + '/server-error.log', {flags: 'a'});
     var errorObject = {
         'code'   : err.code,
         'message': err.message
     };
+
+    nodeErrorLogStream.write(err.stack);
 
     if(framework.env != 'production') {
         errorObject.stack = err.stack;
@@ -77,6 +94,7 @@ app.use(function(err, req, res, next){
     if(!framework.args['silent']) {
         console.error(err.stack);
     }
+
 
     res.status(err.httpCode).send(errorObject);
 });
@@ -89,4 +107,3 @@ module.exports = app;
 if(!framework.args['silent']) {
     console.log(`AlFehrest Server started on port ${argv.port}`);
 }
-

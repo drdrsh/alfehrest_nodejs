@@ -1,10 +1,13 @@
+'use strict';
+
 var PathHelper = {};
 
 function constructPath(directory, entityName) {
     //TODO: Allow deeper paths
     var pathParts = [framework.rootPath, directory];
     if(entityName && entityName != null){
-        if(!entityName.toLowerCase().endsWith(".js")){
+        var nameLC = entityName.toLowerCase();
+        if(!nameLC.endsWith(".js") && !nameLC.endsWith('.json')){
             entityName = "" + entityName + ".js";
         }
         pathParts.push(entityName);
@@ -27,6 +30,15 @@ PathHelper.helpers = function(entityName) {
 PathHelper.controllers = function(entityName) {
     return constructPath("controllers", entityName);
 };
+
+PathHelper.sessions = function(entityName) {
+    return constructPath("users/sessions/", entityName);
+};
+
+PathHelper.profiles = function(entityName) {
+    return constructPath("users/profiles/", entityName);
+};
+
 
 PathHelper.settings = function(entityName) {
     return constructPath("settings", entityName);

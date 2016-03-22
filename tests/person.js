@@ -10,10 +10,10 @@ var fs     = require('fs');
 var server = null;
 process.env.port = "2000";
 process.env.NODE_ENV = "test";
-process.env.silent = true;
+process.env.silent = false;
 
 var rootURL = 'localhost:' + process.env.port + '/api/';
-
+var sessionId = null;
 
 describe('person', function () {
 
@@ -25,11 +25,48 @@ describe('person', function () {
         server.close();
     });
 
+
+    describe('#login', function () {
+        it('Non Authenticated: Should fail', function (done) {
+            request
+                .get(rootURL + 'person/')
+                .set('content-language', 'ar')
+                .end(function (err, r) {
+                    assert.equal(r.res.statusCode, 401);
+                    done();
+                });
+        });
+
+        it('Invalid credentials: Should fail', function (done) {
+            request
+                .post(rootURL + 'session/')
+                .set('content-language', 'ar')
+                .send({"username": "xyz", "password": "123"})
+                .end(function (err, r) {
+                    assert.equal(r.res.statusCode, 401);
+                    done();
+                });
+        });
+
+        it('Correct credentials: Should succeed', function (done) {
+            request
+                .post(rootURL + 'session/')
+                .set('content-language', 'ar')
+                .send({"username": "test", "password": "test"})
+                .end(function (err, r) {
+                    assert.equal(r.res.statusCode, 200);
+                    sessionId = r.body.sessionId;
+                    done();
+                });
+        });
+    });
+
     describe('#create_invalid', function () {
         it('Invalid Object 1', function (done) {
             request
-                .post(rootURL + 'person')
+                .post(rootURL + 'person/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_1.json')))
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 400);
@@ -38,8 +75,9 @@ describe('person', function () {
         });
         it('Invalid Object 2', function (done) {
             request
-                .post(rootURL + 'person')
+                .post(rootURL + 'person/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_2.json')))
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 400);
@@ -48,8 +86,9 @@ describe('person', function () {
         });
         it('Invalid Object 3', function (done) {
             request
-                .post(rootURL + 'person')
+                .post(rootURL + 'person/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_3.json')))
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 400);
@@ -64,9 +103,10 @@ describe('person', function () {
         var newObject = null;
         it('Create valid object', function (done) {
             request
-                .post(rootURL + 'person')
+                .post(rootURL + 'person/')
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json')))
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .end(function (err, r) {
                     newId = r.res.body.id;
                     assert.equal(r.res.statusCode, 200);
@@ -78,6 +118,7 @@ describe('person', function () {
             request
                 .get(rootURL + 'person/' + newId + '/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .end(function (err, r) {
                     var act = r.res.body.entity;
                     var org = JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json'));
@@ -105,6 +146,7 @@ describe('person', function () {
             request
                 .put(rootURL + 'person/' + newId + '/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .send(newObject)
                 .end(function (err, r) {
                     assert.equal(r.status, 204);
@@ -116,6 +158,7 @@ describe('person', function () {
             request
                 .get(rootURL + 'person/' + newId + '/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .end(function (err, r) {
                     var act = r.res.body.entity;
                     assert.equal(r.res.statusCode, 200);
@@ -128,6 +171,7 @@ describe('person', function () {
             request
                 .delete(rootURL + 'person/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .send({'id': newId})
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 204);
@@ -139,6 +183,7 @@ describe('person', function () {
             request
                 .get(rootURL + 'person/' + newId + '/')
                 .set('content-language', 'ar')
+                .set('Authorization', sessionId)
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 404);
                     done();

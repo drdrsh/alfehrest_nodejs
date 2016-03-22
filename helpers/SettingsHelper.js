@@ -1,3 +1,5 @@
+'use strict';
+
 var SettingsHelper = {};
 
 var path = require("./PathHelper.js");
