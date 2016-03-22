@@ -18,6 +18,13 @@ function validateSession(req) {
 
 SessionHelper.login = function(username, password) {
 
+    /* Prevent username 'test' from logging in if we are not in test env
+    *  just a security precaution against forgetfulness :)
+    */
+    if(framework.env !== 'test' && username === 'test') {
+        return false;
+    }
+
     var sessionDirectory = path.sessions();
     fs.existsSync(sessionDirectory) || fs.mkdirSync(sessionDirectory);
 
