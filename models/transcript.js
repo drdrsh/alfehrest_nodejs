@@ -1,3 +1,5 @@
+'use strict';
+
 var BaseModel = require("./base/entity.js");
 var instance;
 

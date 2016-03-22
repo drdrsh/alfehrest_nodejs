@@ -1,3 +1,5 @@
+'use strict';
+
 var validatedArgs = {};
 var argv = require('optimist').argv;
 

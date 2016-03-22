@@ -1,3 +1,5 @@
+'use strict';
+
 var ControllerHelper = {};
 var path = require("./PathHelper.js");
 

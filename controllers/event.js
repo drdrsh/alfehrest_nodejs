@@ -1,3 +1,5 @@
+'use strict';
+
 var EntityController = require("./base/entity.js");
 
 function EventController(app, router) {

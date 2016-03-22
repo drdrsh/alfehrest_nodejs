@@ -1,5 +1,6 @@
-var uniqueIdGenerator = require('shortid');
+'use strict';
 
+var uniqueIdGenerator = require('shortid');
 var cfg = framework.helpers.settings.get("database");
 var modelHelper = framework.helpers.model;
 var db = modelHelper.getDatabase();
@@ -62,6 +63,58 @@ function remove(id) {
     return modelHelper.executeQueries(queries);
 }
 
+function getRelated(language, id) {
+
+    var eCol = cfg.entity_collection;
+    var rCol = cfg.relation_collection;
+
+    var query = `
+        LET eid = '${id}'
+        LET r_outgoing = (
+            FOR r1 IN ${rCol} 
+                FILTER r1._from == CONCAT('${eCol}/', eid) 
+                FOR e1 IN ${eCol}
+                    FILTER e1._key == r1.secondEntityId 
+            RETURN {'relationship': r1, 'entity': e1}
+        )
+        LET r_incoming = (
+            FOR r2 IN ${rCol} 
+                FILTER r2._to == CONCAT('${eCol}/', eid) 
+                FOR e2 IN ${eCol}
+                    FILTER e2._key == r2.firstEntityId 
+            RETURN {'relationship': r2, 'entity': e2}
+        )
+        
+        LET e = (FOR e in ${eCol} FILTER e._key == eid RETURN e)
+        RETURN {
+            'entity': e[0],
+            'relationships': {
+                'incoming': r_incoming,
+                'outgoing': r_outgoing
+            }
+        }`;
+
+    return new Promise(function(resolve, reject){
+        modelHelper.getOneRecord(query).then(
+            record => {
+                var modelHelper = framework.helpers.model;
+                if(record.entity) {
+                    try {
+                        modelHelper.prepareEntityRecord(record, language);
+                    } catch (e) {
+                        return reject(e);
+                    }
+                } else {
+                    return reject(framework.error(1, 404, 'Not Found'));
+                }
+                resolve(record);
+            },
+            err => {reject(err)}
+        );
+    });
+
+}
+
 function getOne(language, id) {
 
     var eCol = cfg.entity_collection;
@@ -69,8 +122,16 @@ function getOne(language, id) {
 
     var query = `
     LET eid = '${id}'
-    LET r_outgoing = (FOR r1 IN ${rCol} FILTER r1._from == CONCAT('${eCol}/', eid) RETURN r1)
-    LET r_incoming = (FOR r2 IN ${rCol} FILTER r2._to   == CONCAT('${eCol}/', eid) RETURN r2)
+    LET r_outgoing = (
+        FOR r1 IN ${rCol} 
+            FILTER r1._from == CONCAT('${eCol}/', eid) 
+        RETURN {'entity':null, 'relationship': r1}
+    )
+    LET r_incoming = (
+        FOR r2 IN ${rCol} 
+            FILTER r2._to == CONCAT('${eCol}/', eid) 
+        RETURN {'entity': null, 'relationship': r2 }
+    )
     LET e = (FOR e in ${eCol} FILTER e._key == eid RETURN e)
     RETURN {
         'entity': e[0],
@@ -86,17 +147,7 @@ function getOne(language, id) {
                 var modelHelper = framework.helpers.model;
                 if(record.entity) {
                     try {
-                        record.entity = modelHelper.detranslateObject(record.entity, language);
-                        for (var idx in record.relationships) {
-                            for (var i = 0; i < record.relationships[idx].length; i++) {
-                                record.relationships[idx][i] = modelHelper.detranslateObject(record.relationships[idx][i], language);
-                                record.relationships[idx][i]['id'] = record.relationships[idx][i]['_key'];
-                                delete record.relationships[idx][i]['_from'];
-                                delete record.relationships[idx][i]['_to'];
-                                delete record.relationships[idx][i]['_rev'];
-                                delete record.relationships[idx][i]['_id'];
-                            }
-                        }
+                        modelHelper.prepareEntityRecord(record, language);
                     } catch (e) {
                         return reject(e);
                     }
@@ -214,6 +265,7 @@ function EntityModel() {
     this.update = update;
     this.remove = remove;
     this.getOne = getOne;
+    this.getRelated = getRelated;
     this.getAll = getAll;
 
     this.getEntityName = getEntityName;

@@ -1,3 +1,5 @@
+'use strict';
+
 var argv = require('optimist').argv;
 var databaseSettings = null;
 var mode = 'test';

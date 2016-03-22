@@ -1,3 +1,5 @@
+'use strict';
+
 var config = {
     "development": {
         "url"     : "http://127.0.0.1:8529",

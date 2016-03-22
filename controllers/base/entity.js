@@ -1,3 +1,4 @@
+'use strict';
 
 function EntityController(app, router) {
 
@@ -55,6 +56,24 @@ function EntityController(app, router) {
             data => { res.send(data); },
             err => { next(err); }
         );
+
+    }
+
+    function getRelated(req, res, next) {
+
+        var id = req.params.id;
+        var entityType = getEntityName();
+        if(!id.startsWith(entityType)) {
+            return next(framework.error(1, 404, 'Not Found'));
+        }
+
+        var model = loadModel();
+
+        model.getRelated(language, id)
+            .then(
+                data => { res.send(data); },
+                err => { next(err); }
+            );
 
     }
 
@@ -133,6 +152,7 @@ function EntityController(app, router) {
 
     router.get('/' + getEntityName() + '/schema/', getSchema);
     router.get('/' + getEntityName() + '/:id/', getOne);
+    router.get('/' + getEntityName() + '/:id/related', getRelated);
     router.get('/' + getEntityName() + '/', getAll);
     router.put('/' + getEntityName() + '/:id/', update);
     router.post('/' + getEntityName() + '/', post);

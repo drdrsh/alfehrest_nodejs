@@ -1,3 +1,5 @@
+'use strict';
+
 var LibraryHelper = {};
 var path = require("./PathHelper.js");
 

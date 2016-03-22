@@ -1,5 +1,6 @@
-var uniqueIdGenerator = require('shortid');
+'use strict';
 
+var uniqueIdGenerator = require('shortid');
 var cfg = framework.helpers.settings.get("database");
 var modelHelper = framework.helpers.model;
 var db = modelHelper.getDatabase();
