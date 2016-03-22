@@ -1,3 +1,5 @@
+'use strict';
+
 var ModelHelper = {};
 
 var path = require("./PathHelper.js");
@@ -11,6 +13,43 @@ ModelHelper.getDatabase = function(){
     var db = (require('arangojs'))(dbSettings.url);
     db.useDatabase(dbSettings.name);
     return db;
+};
+
+ModelHelper.prepareEntityRecord = function(record, language) {
+
+    var toRemove = ['_key', '_from', '_to', '_rev', '_id'];
+
+    record.entity = ModelHelper.detranslateObject(record.entity, language);
+    for(var j=0; j<toRemove.length; j++) {
+        delete record.entity[toRemove[j]];
+    }
+
+    for (var idx in record.relationships) {
+        var rels = [];
+        for (var i = 0; i < record.relationships[idx].length; i++) {
+
+            var e = record.relationships[idx][i]['entity'];
+            var r = record.relationships[idx][i]['relationship'];
+
+            r = ModelHelper.detranslateObject(r, language);
+            if(e) {
+                e = ModelHelper.detranslateObject(e, language);
+                e['id'] = e['_key'];
+                r['entity'] = e;
+            }
+            r['id'] = r['_key'];
+            
+            for(var j=0; j<toRemove.length; j++) {
+                if(e) {
+                    delete e[toRemove[j]];
+                }
+                delete r[toRemove[j]];
+            }
+            rels.push(r);
+        }
+        record.relationships[idx] = rels;
+    }
+    return record;
 };
 
 ModelHelper.detranslateObject= function(obj, language) {
