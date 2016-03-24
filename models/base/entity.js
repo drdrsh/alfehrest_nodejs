@@ -74,14 +74,20 @@ function getRelated(language, id) {
             FOR r1 IN ${rCol} 
                 FILTER r1._from == CONCAT('${eCol}/', eid) 
                 FOR e1 IN ${eCol}
-                    FILTER e1._key == r1.secondEntityId 
+                    FILTER 
+                        e1._key == r1.secondEntityId 
+                    AND
+                        (e1._entity_type == "person" OR e1._entity_type == "tribe")
             RETURN {'relationship': r1, 'entity': e1}
         )
         LET r_incoming = (
             FOR r2 IN ${rCol} 
                 FILTER r2._to == CONCAT('${eCol}/', eid) 
                 FOR e2 IN ${eCol}
-                    FILTER e2._key == r2.firstEntityId 
+                    FILTER 
+                        e2._key == r2.firstEntityId 
+                    AND 
+                        (e2._entity_type == "person" OR e2._entity_type == "tribe")
             RETURN {'relationship': r2, 'entity': e2}
         )
         

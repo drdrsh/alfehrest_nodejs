@@ -1,7 +1,7 @@
 'use strict';
 
 var argv = require('./arguments.js');
-
+argv.silent = false;
 var express    = require('express');
 var bodyParser = require('body-parser');
 var fs         = require('fs');
