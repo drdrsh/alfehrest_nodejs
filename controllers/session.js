@@ -4,8 +4,14 @@
 
 
 function SessionsController(app, router) {
+    router.get('/session/', get);
     router.post('/session/', post);
     router.delete('/session/', remove);
+
+    function get(req, res, next) {
+        //Already logged in? return 403
+        res.status(204).send();
+    }
 
     function post(req, res, next) {
         //TODO: Make sure this is called over https
