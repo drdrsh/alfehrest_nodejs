@@ -10,18 +10,21 @@ var morgan     = require('morgan');
 var app    = express();
 var router = express.Router();
 
-global.framework = require('./framework.js')(app, argv);
+global.framework = require('./framework.js')(app, router, argv);
 
+//Log file handling
 var logDirectory = __dirname + '/log';
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
-
 var accessLogStream = fs.createWriteStream(logDirectory + '/access.log', {flags: 'a'});
 var errorLogStream = fs.createWriteStream(logDirectory + '/error.log', {flags: 'a'});
-
 app.use(morgan('combined', {stream: accessLogStream}));
 app.use(morgan('combined', {stream: errorLogStream, skip: function (req, res) { return res.statusCode < 400 }}));
+
+//Parsing Body
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+//OPTIONS request handling
 app.use(function(req, res, next){
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -32,24 +35,28 @@ app.use(function(req, res, next){
     }
     next();
 });
+
+//Authentication handling
 app.use(function(req, res, next) {
 
-    var allowedRoutes = framework.helpers.settings.get('general', 'no_auth_routes');
-    var currentRoute = req.method.toLowerCase() + ":" + req.url;
+    var sessionHelper = framework.helpers.session;
 
     //Route doesn't require authentication
-    if(allowedRoutes.indexOf(currentRoute) != -1) {
+    if(!sessionHelper.requestRequiresAuthentication(req)) {
         //proceed
+        //TODO: Check for API keys
         return next();
     }
 
-    if(!framework.helpers.session.isLoggedIn(req)) {
+    if(!sessionHelper.isLoggedIn(req)) {
         return next(framework.error(1, 401, 'Unauthorized'));
     }
 
     next();
 });
 
+
+//Request Language handling
 app.use(function(req, res, next){
 
     var lang = req.headers["content-language"];
@@ -63,20 +70,8 @@ app.use(function(req, res, next){
     
 });
 
-app.use(function(req, res, next){
 
-    var lang = req.headers["content-language"];
-
-    var supportedLanguages = framework.helpers.settings.get('general').languages;
-    if(supportedLanguages.indexOf(lang) == -1) {
-        return next(framework.error(1, 400, 'Invalid language code'));
-    }
-    framework.currentLanguage = lang;
-    next();
-
-});
-
-app.use('/api', router);
+app.use(global.framework.rootUrl, router);
 app.use(function(err, req, res, next){
 
     var nodeErrorLogStream = fs.createWriteStream(logDirectory + '/server-error.log', {flags: 'a'});

@@ -4,7 +4,16 @@ var config = {
     "development": {
         "entities" : ["event", "idol", "person", "place", "transcript", "tribe"],
         "languages": ['ar', 'en'],
-        "no_auth_routes" : ['post:/api/session/'],
+        "apiRoot" : "/api",
+        "no_auth_routes" : [
+            'post:/session/.*',
+            'get:/person/.*',
+            'get:/event/.*',
+            'get:/place/.*',
+            'get:/idol/.*',
+            'get:/transcript/.*',
+            'get:/tribe/.*'
+        ],
         "max_session": 30
     },
     "production": {

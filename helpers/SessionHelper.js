@@ -16,6 +16,42 @@ function validateSession(req) {
     return true;
 }
 
+SessionHelper.requestRequiresAuthentication = function(req) {
+
+    var allowedRoutes = framework.helpers.settings.get('general', 'no_auth_routes');
+    var requestMethod = req.method.toLowerCase();
+    
+    //Remove initial and trailing slashes
+    var requestUrl = req.originalUrl.substr(framework.rootUrl.length).replace(/^\//ig, '').replace(/\/$/ig, '');
+
+    var l = allowedRoutes.length;
+    for(let i=0; i<l; i++) {
+        let methodMatch = false;
+        let pathMatch = true;
+
+        let parts = allowedRoutes[i].split(':');
+        let allowedMethod= parts[0];
+        let allowedRoute = parts[1].replace(/^\//ig, '').replace(/\/$/ig, '');
+        let requestRoute = requestUrl + '/';
+
+        if(allowedMethod === '*' || requestMethod === allowedMethod) {
+            methodMatch = true;
+        } else {
+            continue;
+        }
+
+        let regex = new RegExp(allowedRoute);
+        pathMatch = regex.test(requestRoute);
+
+        if(methodMatch && pathMatch) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+
 SessionHelper.login = function(username, password) {
 
     /* Prevent username 'test' from logging in if we are not in test env

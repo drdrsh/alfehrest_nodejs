@@ -27,9 +27,19 @@ describe('person', function () {
 
 
     describe('#login', function () {
-        it('Non Authenticated: Should fail', function (done) {
+        it('Non Authenticated open endpoint: Should succeed', function (done) {
             request
                 .get(rootURL + 'person/')
+                .set('content-language', 'ar')
+                .end(function (err, r) {
+                    assert.equal(r.res.statusCode, 200);
+                    done();
+                });
+        });
+
+        it('Non Authenticated secure endpoint: Should fail', function (done) {
+            request
+                .post(rootURL + 'person/')
                 .set('content-language', 'ar')
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 401);

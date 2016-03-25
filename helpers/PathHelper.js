@@ -4,7 +4,11 @@ var PathHelper = {};
 
 function constructPath(directory, entityName) {
     //TODO: Allow deeper paths
-    var pathParts = [framework.rootPath, directory];
+    var rootPath = require('path').resolve(__dirname + "/../");
+    if(typeof framework != "undefined") {
+        rootPath = framework.rootPath;
+    }
+    var pathParts = [rootPath, directory];
     if(entityName && entityName != null){
         var nameLC = entityName.toLowerCase();
         if(!nameLC.endsWith(".js") && !nameLC.endsWith('.json')){

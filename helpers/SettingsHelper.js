@@ -4,10 +4,11 @@ var SettingsHelper = {};
 
 var path = require("./PathHelper.js");
 
-SettingsHelper.get = function(file, key) {
+SettingsHelper.get = function(file, key, inEnv) {
 
     var config = require(path.settings(file));
-    var env = framework.env;
+
+    var env = inEnv || framework.env;
 
     if( !(env in config) ){
         throw new Error(`No configurations were found for environment ${env} in config file ${config}`);
