@@ -124,6 +124,24 @@ describe('person', function () {
                 });
         });
 
+        it('Get All entities list', function (done) {
+            request
+                .get(rootURL + 'person/')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .end(function (err, r) {
+                    assert.equal(r.res.statusCode, 200);
+                    var response = r.body;
+                    assert(Array.isArray(response));
+                    if(response.length) {
+                        assert.ok(response[0].entity_type);
+                        assert.ok(response[0].id);
+                        assert.ok(response[0].name);
+                    }
+                    done();
+                });
+        });
+
         it('Read valid entity', function (done) {
             request
                 .get(rootURL + 'person/' + newId + '/')

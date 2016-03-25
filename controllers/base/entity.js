@@ -2,8 +2,6 @@
 
 function EntityController(app, router) {
 
-    var language = framework.currentLanguage;
-
     var getEntityName = this.getEntityName || function() { return null; };
 
     function getDatabase() { return framework.helpers.model.getDatabase(); }
@@ -22,7 +20,7 @@ function EntityController(app, router) {
         delete req.body.relationships;
 
         var newEntityId = null;
-        model.create(language, req.body)
+        model.create(framework.currentLanguage, req.body)
         .then(
             data => {
                 newEntityId = data.id;
@@ -37,7 +35,7 @@ function EntityController(app, router) {
                 }
 
                 var model = loadEntityModel('relationship');
-                return model.create(language, newEntityId, relationships, false);
+                return model.create(framework.currentLanguage, newEntityId, relationships, false);
             },
             err => { next(err); }
         )
@@ -52,7 +50,7 @@ function EntityController(app, router) {
 
         var model = loadModel();
 
-        model.getAll(language).then(
+        model.getAll(framework.currentLanguage).then(
             data => { res.send(data); },
             err => { next(err); }
         );
@@ -69,7 +67,7 @@ function EntityController(app, router) {
 
         var model = loadModel();
 
-        model.getRelated(language, id)
+        model.getRelated(framework.currentLanguage, id)
             .then(
                 data => { res.send(data); },
                 err => { next(err); }
@@ -87,7 +85,7 @@ function EntityController(app, router) {
 
         var model = loadModel();
 
-        model.getOne(language, id)
+        model.getOne(framework.currentLanguage, id)
         .then(
             data => { res.send(data); },
             err => { next(err); }
@@ -110,8 +108,8 @@ function EntityController(app, router) {
         delete req.body.relationships;
 
         Promise.all([
-            entityModel.update(language, id, req.body),
-            relationshipModel.update(language, id, incomingRelationships)
+            entityModel.update(framework.currentLanguage, id, req.body),
+            relationshipModel.update(framework.currentLanguage, id, incomingRelationships)
         ])
         .then(
             results => { res.status(204).send(); },
@@ -143,7 +141,7 @@ function EntityController(app, router) {
         var db = getDatabase();
         var model = loadModel();
 
-        model.getPreparedRelationshipSchema(language).then(
+        model.getPreparedRelationshipSchema(framework.currentLanguage).then(
             data => { res.send(data); },
             err => { next(err); }
         );
