@@ -25,201 +25,173 @@ describe('person', function () {
         server.close();
     });
 
+    var newId = null;
+    var newObject = null;
 
-    describe('#login', function () {
-        it('Non Authenticated open endpoint: Should succeed', function (done) {
-            request
-                .get(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 200);
-                    done();
-                });
-        });
-
-        it('Non Authenticated secure endpoint: Should fail', function (done) {
-            request
-                .post(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 401);
-                    done();
-                });
-        });
-
-        it('Invalid credentials: Should fail', function (done) {
-            request
-                .post(rootURL + 'session/')
-                .set('content-language', 'ar')
-                .send({"username": "xyz", "password": "123"})
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 401);
-                    done();
-                });
-        });
-
-        it('Correct credentials: Should succeed', function (done) {
-            request
-                .post(rootURL + 'session/')
-                .set('content-language', 'ar')
-                .send({"username": "test", "password": "test"})
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 200);
-                    sessionId = r.body.sessionId;
-                    done();
-                });
-        });
+    it('Login with correct credentials: Should succeed', function (done) {
+        request
+            .post(rootURL + 'session/')
+            .set('content-language', 'ar')
+            .send({"username": "test", "password": "test"})
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 200);
+                sessionId = r.body.sessionId;
+                done();
+            });
     });
 
-    describe('#create_invalid', function () {
-        it('Invalid Object 1', function (done) {
-            request
-                .post(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_1.json')))
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 400);
-                    done();
-                });
-        });
-        it('Invalid Object 2', function (done) {
-            request
-                .post(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_2.json')))
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 400);
-                    done();
-                });
-        });
-        it('Invalid Object 3', function (done) {
-            request
-                .post(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_3.json')))
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 400);
-                    done();
-                });
-        });
+    it('Invalid Object 1', function (done) {
+        request
+            .post(rootURL + 'person/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_1.json')))
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 400);
+                done();
+            });
     });
 
+    it('Invalid Object 2', function (done) {
+        request
+            .post(rootURL + 'person/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_2.json')))
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 400);
+                done();
+            });
+    });
+    it('Invalid Object 3', function (done) {
+        request
+            .post(rootURL + 'person/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_3.json')))
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 400);
+                done();
+            });
+    });
 
-    describe('#create_valid', function () {
-        var newId = null;
-        var newObject = null;
-        it('Create valid object', function (done) {
-            request
-                .post(rootURL + 'person/')
-                .send(JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json')))
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .end(function (err, r) {
-                    newId = r.res.body.id;
-                    assert.equal(r.res.statusCode, 200);
-                    done();
-                });
-        });
+    it('Create valid object', function (done) {
+        request
+            .post(rootURL + 'person/')
+            .send(JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json')))
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .end(function (err, r) {
+                newId = r.res.body.id;
+                assert.equal(r.res.statusCode, 200);
+                done();
+            });
+    });
 
-        it('Get All entities list', function (done) {
-            request
-                .get(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 200);
-                    var response = r.body;
-                    assert(Array.isArray(response));
-                    if(response.length) {
-                        assert.ok(response[0].entity_type);
-                        assert.ok(response[0].id);
-                        assert.ok(response[0].name);
+    it('Get All entities list', function (done) {
+        request
+            .get(rootURL + 'person/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 200);
+                var response = r.body;
+                assert(Array.isArray(response));
+                if(response.length) {
+                    assert.ok(response[0].entity_type);
+                    assert.ok(response[0].id);
+                    assert.ok(response[0].name);
+                }
+                done();
+            });
+    });
+
+    it('Read valid entity', function (done) {
+        request
+            .get(rootURL + 'person/' + newId + '/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .end(function (err, r) {
+                var act = r.res.body.entity;
+                var org = JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json'));
+                //Simple one level check for eqaulity
+                for(var idx1 in org) {
+                    if(idx1 == 'id') {
+                       continue;
                     }
-                    done();
-                });
-        });
-
-        it('Read valid entity', function (done) {
-            request
-                .get(rootURL + 'person/' + newId + '/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .end(function (err, r) {
-                    var act = r.res.body.entity;
-                    var org = JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json'));
-                    //Simple one level check for eqaulity
-                    for(var idx1 in org) {
-                        if(idx1 == 'id') {
-                           continue;
+                    var orgValue = org[idx1];
+                    if(Array.isArray(orgValue) || typeof orgValue == 'object') {
+                        for(var idx2 in orgValue) {
+                            assert.equal(org[idx1][idx2], act[idx1][idx2]);
                         }
-                        var orgValue = org[idx1];
-                        if(Array.isArray(orgValue) || typeof orgValue == 'object') {
-                            for(var idx2 in orgValue) {
-                                assert.equal(org[idx1][idx2], act[idx1][idx2]);
-                            }
-                        } else {
-                            assert.equal(orgValue, act[idx1]);
-                        }
+                    } else {
+                        assert.equal(orgValue, act[idx1]);
                     }
-                    newObject = act;
-                    done();
-                });
-        });
-
-        it('Update entity', function (done) {
-            newObject.bio = rand.generate();
-            request
-                .put(rootURL + 'person/' + newId + '/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .send(newObject)
-                .end(function (err, r) {
-                    assert.equal(r.status, 204);
-                    done();
-                });
-        });
-
-        it('Read updated entity', function (done) {
-            request
-                .get(rootURL + 'person/' + newId + '/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .end(function (err, r) {
-                    var act = r.res.body.entity;
-                    assert.equal(r.res.statusCode, 200);
-                    assert.equal(newObject.bio, act.bio);
-                    done();
-                });
-        });
-
-        it('Delete entity', function (done) {
-            request
-                .delete(rootURL + 'person/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .send({'id': newId})
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 204);
-                    done();
-                });
-        });
-
-        it('Reads deleted entity', function (done) {
-            request
-                .get(rootURL + 'person/' + newId + '/')
-                .set('content-language', 'ar')
-                .set('Authorization', sessionId)
-                .end(function (err, r) {
-                    assert.equal(r.res.statusCode, 404);
-                    done();
-                });
-        });
-
-
+                }
+                newObject = act;
+                done();
+            });
     });
 
+    it('Update entity', function (done) {
+        newObject.bio = rand.generate();
+        request
+            .put(rootURL + 'person/' + newId + '/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .send(newObject)
+            .end(function (err, r) {
+                assert.equal(r.status, 204);
+                done();
+            });
+    });
+
+    it('Read updated entity', function (done) {
+        request
+            .get(rootURL + 'person/' + newId + '/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .end(function (err, r) {
+                var act = r.res.body.entity;
+                assert.equal(r.res.statusCode, 200);
+                assert.equal(newObject.bio, act.bio);
+                done();
+            });
+    });
+
+    it('Delete entity', function (done) {
+        request
+            .delete(rootURL + 'person/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .send({'id': newId})
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 204);
+                done();
+            });
+    });
+
+    it('Reads deleted entity', function (done) {
+        request
+            .get(rootURL + 'person/' + newId + '/')
+            .set('content-language', 'ar')
+            .set('Authorization', sessionId)
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 404);
+                done();
+            });
+    });
+
+    it('Logout: Should succeed', function (done) {
+        request
+            .delete(rootURL + 'session/')
+            .set('Content-language', 'ar')
+            .set('Authorization', sessionId)
+            .end(function (err, r) {
+                assert.equal(r.res.statusCode, 204);
+                done();
+            });
+    });
+    
 
 });

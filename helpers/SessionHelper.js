@@ -16,6 +16,19 @@ function validateSession(req) {
     return true;
 }
 
+function getSessionIdFromHeaders(req) {
+    var auth = req.headers['authorization'];
+    if(!auth) {
+        return null;
+    }
+    //We will use this as a file name, make sure nothing suspecious is in
+    var validToken = /[A-Za-z0-9]{64}/ig;
+    if(!validToken.test(auth)) {
+        return false;
+    }
+    return auth;
+}
+
 SessionHelper.requestRequiresAuthentication = function(req) {
 
     var allowedRoutes = framework.helpers.settings.get('general', 'no_auth_routes');
@@ -51,6 +64,12 @@ SessionHelper.requestRequiresAuthentication = function(req) {
     return true;
 };
 
+SessionHelper.logout = function(req) {
+    var auth = getSessionIdFromHeaders(req);
+    var sessionFN = path.sessions(`${auth}.json`);
+    fs.unlinkSync(sessionFN);
+    return true;
+};
 
 SessionHelper.login = function(username, password) {
 
@@ -98,15 +117,12 @@ SessionHelper.login = function(username, password) {
 
 SessionHelper.isLoggedIn = function(req) {
 
-    var auth = req.headers['authorization'];
+    var auth = getSessionIdFromHeaders(req);
+
     if(!auth || !validateSession(req)) {
         return false;
     }
-    //We will use this as a file name, make sure nothing suspecious is in
-    var validToken = /[A-Za-z0-9]{64}/ig;
-    if(!validToken.test(auth)) {
-        return false;
-    }
+
     var sessionFN = path.sessions(`${auth}.json`);
 
     if(!fs.existsSync(sessionFN)) {

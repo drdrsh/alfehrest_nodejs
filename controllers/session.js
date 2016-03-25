@@ -4,6 +4,9 @@
 
 
 function SessionsController(app, router) {
+
+    var sessionHelper = framework.helpers.session;
+
     router.get('/session/', get);
     router.post('/session/', post);
     router.delete('/session/', remove);
@@ -18,7 +21,7 @@ function SessionsController(app, router) {
         //TODO : Harden against brute force attacks
         
         //Already logged in? return 403
-        if(framework.helpers.session.isLoggedIn(req)) {
+        if(sessionHelper.isLoggedIn(req)) {
             return next(framework.error(1, 403, 'User is already logged in!'))
         }
 
@@ -26,7 +29,7 @@ function SessionsController(app, router) {
         var password = req.body.password;
 
 
-        var sessionData = framework.helpers.session.login(username, password);
+        var sessionData = sessionHelper.login(username, password);
         if(!sessionData) {
             return next(framework.error(1, 401, 'Invalid credentials'))
         }
@@ -37,6 +40,8 @@ function SessionsController(app, router) {
 
     function remove(req, res, next) {
         //Middleware won't allow the user to reach this section without being logged in first
+        sessionHelper.logout(req);
+        res.status(204).send();
     }
 
 }
