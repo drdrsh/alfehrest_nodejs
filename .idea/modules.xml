@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AlFehrest_NodeJS.iml" filepath="$PROJECT_DIR$/.idea/AlFehrest_NodeJS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/AlFehrestGraphServerSide.iml" filepath="$PROJECT_DIR$/.idea/AlFehrestGraphServerSide.iml" />
     </modules>
   </component>
 </project>
