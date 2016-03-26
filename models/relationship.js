@@ -108,6 +108,12 @@ function updateCurrentRelationships(language, entityId, incomingRelationships, c
 
     for(let i=0; i<incomingRelationships.length; i++) {
         let rel = incomingRelationships[i];
+        
+        //Disallow circular relationship
+        if(rel.firstEntityId === rel.secondEntityId) {
+            return Promise.reject(framework.error(1, 400, 'Circular relationships are not allowed!'));
+        }
+
         if(rel['id'] != '' ) {
             if(!rel['id'] in relationshipKeys) {
                 return Promise.reject(framework.error(1, 400, 'Invalid relationship'));

@@ -1,0 +1,31 @@
+[{
+  "id": "",
+  "firstEntityId": "",
+  "secondEntityId": "",
+  "firstEntityType": "person",
+  "secondEntityType": "person",
+  "type": "person.zawj",
+  "relationship": "zawj",
+  "dateStarted": {
+"first_date": null,
+"second_date": null,
+"mode": "approx"
+  },
+  "dateEnded" : {
+"first_date": null,
+"second_date": null,
+"mode": "approx"
+  },
+  "comments": "",
+  "references": ["مرجع عالمي", "مرجع حلو"]
+}, {
+  "id": "",
+  "firstEntityId": "",
+  "secondEntityId": "",
+  "firstEntityType": "person",
+  "secondEntityType": "person",
+  "type": "person.wld",
+  "relationship": "wld",
+  "comments": "",
+  "references": ["سجاح", "Good"]
+}]
