@@ -95,9 +95,13 @@ function EntityController(app, router) {
 
     function update(req, res, next){
 
-        var id = req.body.id;
+        var id = req.params.id;
         var entityType = getEntityName();
-        if(!id.startsWith(entityType)){
+        if(id !== req.body.id) {
+            return next(framework.error(1, 400, 'Invalid ID'));
+        }
+
+        if(!id || !id.startsWith(entityType)) {
             return next(framework.error(1, 404, 'Not Found'));
         }
 

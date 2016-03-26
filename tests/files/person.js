@@ -121,7 +121,22 @@ module.exports = function(rootURL) {
                 });
         });
 
-        it('Update entity: Should succeed', function (done) {
+        it('Update entity with ID discrepancy: Should fail', function (done) {
+            newObject.bio = rand.generate();
+            newObject.id = 'person_XXXXXXX';
+            request
+                .put(rootURL + 'person/' + newId + '/')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .send(newObject)
+                .end(function (err, r) {
+                    assert.equal(r.status, 400);
+                    done();
+                });
+        });
+
+        it('Update entity in full: Should succeed', function(done) {
+            newObject.id = newId;
             newObject.bio = rand.generate();
             request
                 .put(rootURL + 'person/' + newId + '/')
@@ -143,6 +158,35 @@ module.exports = function(rootURL) {
                     var act = r.res.body.entity;
                     assert.equal(r.res.statusCode, 200);
                     assert.equal(newObject.bio, act.bio);
+                    done();
+                });
+        });
+
+        var partialEntity = null;
+        it('Update entity partial: Should succeed', function (done) {
+            partialEntity = {'id': newId, 'bio': rand.generate()};
+            request
+                .put(rootURL + 'person/' + newId + '/')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .send(partialEntity)
+                .end(function (err, r) {
+                    assert.equal(r.status, 204);
+                    done();
+                });
+        });
+
+        it('Read updated entity: Should succeed', function (done) {
+            request
+                .get(rootURL + 'person/' + newId + '/')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .end(function (err, r) {
+                    var act = r.res.body.entity;
+                    assert.equal(r.res.statusCode, 200);
+                    assert.equal(partialEntity.bio, act.bio);
+                    assert.equal(newObject.revisionState, act.revisionState);
+                    assert.deepEqual(newObject.born, act.born);
                     done();
                 });
         });
