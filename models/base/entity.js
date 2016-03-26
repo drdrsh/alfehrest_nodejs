@@ -53,9 +53,8 @@ function remove(id) {
 
     var queries = [];
     queries.push(`
-        LET eid = '${id}'
         FOR r IN ${rCol}
-            FILTER r._from == eid || r._to == eid
+            FILTER r._from == '${eCol}/${id}' || r._to == '${eCol}/${id}'
             REMOVE r IN ${rCol}`
     );
     queries.push(`REMOVE '${id}' IN ${eCol}`);

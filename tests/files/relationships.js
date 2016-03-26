@@ -120,6 +120,49 @@ module.exports = function(rootURL) {
             });
         }
 
+        it(`Delete entity ${ENTITY_MAX-1}: Should succeed`, function (done) {
+            request
+                .delete(rootURL + 'person/')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .send({'id': entityIds[ENTITY_MAX-1]})
+                .end(function (err, r) {
+                    assert.equal(r.res.statusCode, 204);
+                    done();
+                });
+        });
+
+
+        for(let i=0; i<ENTITY_MAX-1; i++) {
+            it(`Read relationships for ${i}: Should Succeed`, function (done) {
+                request
+                    .get(rootURL + 'person/' + entityIds[i] + '/')
+                    .set('content-language', 'ar')
+                    .set('Authorization', sessionId)
+                    .end(function(err, r) {
+                        assert.equal(r.status, 200);
+                        let rels = r.body.relationships;
+                        assert.equal(rels.outgoing.length, ENTITY_MAX-2);
+                        assert.equal(rels.incoming.length, ENTITY_MAX-2);
+                        done();
+                    });
+            });
+        }
+
+        for(let i=0; i<ENTITY_MAX-1; i++) {
+            it(`Delete entity ${i}: Should succeed`, function (done) {
+                request
+                    .delete(rootURL + 'person/')
+                    .set('content-language', 'ar')
+                    .set('Authorization', sessionId)
+                    .send({'id': entityIds[i]})
+                    .end(function (err, r) {
+                        assert.equal(r.res.statusCode, 204);
+                        done();
+                    });
+            });
+        }
+
         it('Logout: Should succeed', function (done) {
             request
                 .delete(rootURL + 'session/')

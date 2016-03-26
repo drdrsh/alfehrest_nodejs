@@ -126,7 +126,7 @@ function EntityController(app, router) {
 
         var id = req.body.id;
         var entityType = getEntityName();
-        if(!id.startsWith(entityType)){
+        if(!id || !id.startsWith(entityType)){
             return next(framework.error(1, 404, 'Not Found'));
         }
 
