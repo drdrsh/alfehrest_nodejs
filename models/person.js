@@ -55,7 +55,6 @@ function PersonModel() {
         }
 
         formDef = framework.helpers.library.create("FormDefinition");
-        formDef.addDatePair(['dateStarted', 'dateEnded'], ['البدء', 'النهاية'], [false, false]);
         formDef.addComment();
         formDef.addRef();
 
