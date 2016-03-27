@@ -14,7 +14,7 @@ var config = {
         "url"     : "http://127.0.0.1:8529",
         "username": "",
         "password": "",
-        "name": "prod_db",
+        "name": "dev_db",
         "graph_name": "main_graph",
         "entity_collection": "entity",
         "relation_collection": "relation"
