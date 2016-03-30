@@ -1,5 +1,5 @@
-/apps
-node_modules/
+apps/**
+node_modules/**
 .idea_modules/
 
 # User-specific stuff:
