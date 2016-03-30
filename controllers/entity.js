@@ -60,6 +60,19 @@ function EntityController(app, router) {
     function getRelated(req, res, next) {
 
         var id = req.params.id;
+        var types = [];
+        if(req.query.types) {
+            let ts = req.query.types.split(',');
+            var cfg = framework.helpers.settings.get("general");
+
+            for(let i=0; i<ts.length; i++) {
+                let type = ts[i].trim();
+                if(cfg.entities.indexOf(type) === -1) {
+                    return next(framework.error(1, 400, 'Invalid relation type'));
+                }
+                types.push(type);
+            }
+        }
         var entityType = getEntityName();
         if(!id.startsWith(entityType)) {
             return next(framework.error(1, 404, 'Not Found'));
@@ -67,7 +80,7 @@ function EntityController(app, router) {
 
         var model = loadModel();
 
-        model.getRelated(framework.currentLanguage, id)
+        model.getRelated(framework.currentLanguage, id, types)
             .then(
                 data => { res.send(data); },
                 err => { next(err); }

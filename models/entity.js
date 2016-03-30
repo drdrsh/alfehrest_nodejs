@@ -62,10 +62,25 @@ function remove(id) {
     return modelHelper.executeQueries(queries);
 }
 
-function getRelated(language, id) {
+function getRelated(language, id, types) {
 
     var eCol = cfg.entity_collection;
     var rCol = cfg.relation_collection;
+
+    let e1FilterClause = '';
+    let e2FilterClause = '';
+    let e1Filters = [];
+    let e2Filters = [];
+    for(let i=0; i<types.length; i++) {
+        let t = types[i];
+        e1Filters.push(`e1._entity_type == "${t}"`);
+        e2Filters.push(`e2._entity_type == "${t}"`);
+    }
+    if(types.length) {
+        e1FilterClause = " AND " + e1Filters.join(" OR ");
+        e2FilterClause = " AND " + e2Filters.join(" OR ");
+    }
+
 
     var query = `
         LET eid = '${id}'
@@ -75,8 +90,7 @@ function getRelated(language, id) {
                 FOR e1 IN ${eCol}
                     FILTER 
                         e1._key == r1.secondEntityId 
-                    AND
-                        (e1._entity_type == "person" OR e1._entity_type == "tribe")
+                    ${e1FilterClause}
             RETURN {'relationship': r1, 'entity': e1}
         )
         LET r_incoming = (
@@ -85,8 +99,7 @@ function getRelated(language, id) {
                 FOR e2 IN ${eCol}
                     FILTER 
                         e2._key == r2.firstEntityId 
-                    AND 
-                        (e2._entity_type == "person" OR e2._entity_type == "tribe")
+                    ${e2FilterClause}
             RETURN {'relationship': r2, 'entity': e2}
         )
         
