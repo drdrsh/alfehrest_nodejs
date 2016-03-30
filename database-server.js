@@ -47,7 +47,8 @@ let port = dbConfig.test.url.split(':').pop();
 
 const DB_FILES_PATH = `./apps/${appId}/data/`;
 const ARANGO_PATH = require('path').resolve(`${DB_FILES_PATH}arangodb/`);
-let   dbExists   = true;
+let   dbExists     = true;
+let   shouldDelete = true;
 try {
     fs.accessSync(ARANGO_PATH + '/databases/', fs.R_OK);
 } catch (e) {
@@ -56,7 +57,7 @@ try {
 
 if(dbExists && !force && mode === 'start') {
     console.log("Database already exists, use --force to delete existant database");
-    process.exit(1);
+    shouldDelete = false;
 }
 
 process.stdout.write("Stopping previous containers...");
@@ -75,37 +76,42 @@ if(mode === 'stop') {
     process.exit(0);
 }
 
-require('rimraf').sync(ARANGO_PATH);
+if(shouldDelete) {
+    require('rimraf').sync(ARANGO_PATH);
+    process.stdout.write("Extracting data...");
+    targz()
+        .extract(`${DB_FILES_PATH}data.tar.gz`, ARANGO_PATH)
+        .then(runContainer)
+        .catch(function () {
+            console.log(`Failed to extract ${DB_FILES_PATH}data.tar.gz`);
+            process.exit(1);
+        });
+} else {
+    runContainer()
+}
 
-process.stdout.write("Extracting data...");
+function runContainer() {
 
-targz()
-    .extract(`${DB_FILES_PATH}data.tar.gz`, ARANGO_PATH)
-    .then(function(){
-        process.stdout.write("Done\n");
-        process.stdout.write(`Starting ArangoDB docker container on port ${port} named ${engineName}....`);
-        let newPath = ARANGO_PATH;
-        newPath =
-            newPath
+    process.stdout.write("Done\n");
+    process.stdout.write(`Starting ArangoDB docker container on port ${port} named ${engineName}....`);
+    let newPath = ARANGO_PATH;
+    newPath =
+        newPath
             .replace(/([A-Za-z]):\\/ig, function(match, p1){return '/' + p1.toLowerCase() + '/' })
             .replace(/\\/ig,'/');
 
 
-        let params = [
-            '--name', engineName,
-            '-p', `8529:${port}`,
-            '-d',
-            '-v', `${newPath}:/var/lib/arangodb`,
-            `arangodb:2.8.1`
-        ];
+    let params = [
+        '--name', engineName,
+        '-p', `${port}:8529`,
+        '-d',
+        '-v', `${newPath}:/var/lib/arangodb`,
+        `arangodb:2.8.1`
+    ];
 
-        let cmd = 'docker run ' + params.join(' ');
-        cp.execSync(cmd);
+    let cmd = 'docker run ' + params.join(' ');
+    cp.execSync(cmd);
 
-        process.stdout.write("Done\n");
-        process.exit(0);
-    })
-    .catch(function(){
-        console.log(`Failed to extract ${DB_FILES_PATH}data.tar.gz`);
-        process.exit(1);
-    });
+    process.stdout.write("Done\n");
+    process.exit(0);
+}
