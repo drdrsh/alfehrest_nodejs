@@ -99,8 +99,16 @@ app.use(function(err, req, res, next){
         console.error(err.stack);
     }
 
+    if(!errorObject) {
+        if(framework.env != 'production') {
+            res.status(err.httpCode || 500).send(err.message);
+        } else {
+            res.status(err.httpCode || 500).send("Internal Server Error");
+        }
+    } else {
+        res.status(err.httpCode || 500).send(errorObject);
+    }
 
-    res.status(err.httpCode).send(errorObject);
 });
 
 require('./controllers').load(app, router);
