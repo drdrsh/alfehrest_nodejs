@@ -11,7 +11,6 @@ module.exports = function(rootURL) {
 
     var sessionId = null;
     describe('session', function () {
-
         it('Probe session state w/o authorization: Should fail', function (done) {
             request
                 .get(rootURL + 'session/')
@@ -110,7 +109,6 @@ module.exports = function(rootURL) {
                     done();
                 });
         });
-
-
+        
     });
 };

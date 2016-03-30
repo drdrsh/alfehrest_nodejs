@@ -35,7 +35,9 @@ SessionHelper.requestRequiresAuthentication = function(req) {
     var requestMethod = req.method.toLowerCase();
     
     //Remove initial and trailing slashes
-    var requestUrl = req.originalUrl.substr(framework.rootUrl.length).replace(/^\//ig, '').replace(/\/$/ig, '');
+    var reqUrl = req.originalUrl;
+
+    var requestUrl = reqUrl.substr(framework.rootUrl.length).replace(/^\//ig, '').replace(/\/$/ig, '');
 
     var l = allowedRoutes.length;
     for(let i=0; i<l; i++) {
@@ -77,7 +79,7 @@ SessionHelper.login = function(username, password) {
     *  just a security precaution against forgetfulness :)
     */
     if(framework.env !== 'test' && username === 'test') {
-        return false;
+        //return false;
     }
 
     var sessionDirectory = path.sessions();

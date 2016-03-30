@@ -8,7 +8,7 @@ function SessionsController(app, router) {
     var sessionHelper = framework.helpers.session;
 
     router.get('/session/', get);
-    router.post('/session/', post);
+    router.post('/session', post);
     router.delete('/session/', remove);
 
     function get(req, res, next) {

@@ -2,11 +2,15 @@
 
 var PathHelper = {};
 
-function constructPath(directory, entityName) {
+function constructPath(directory, entityName, core) {
     //TODO: Allow deeper paths
-    var rootPath = require('path').resolve(__dirname + "/../");
+    var pathLib = require('path');
+    var rootPath = pathLib.resolve(__dirname + "/../");
     if(typeof framework != "undefined") {
         rootPath = framework.rootPath;
+    }
+    if(!core) {
+        rootPath = pathLib.resolve(rootPath + `/apps/${appId}/`);
     }
     var pathParts = [rootPath, directory];
     if(entityName && entityName != null){
@@ -19,20 +23,20 @@ function constructPath(directory, entityName) {
     return require("path").join.apply(null, pathParts);
 }
 
-PathHelper.libraries = function(entityName) {
-    return constructPath("lib", entityName);
+PathHelper.libraries = function(entityName, core) {
+    return constructPath("lib", entityName, core);
 };
 
-PathHelper.models = function(entityName) {
-    return constructPath("models", entityName);
+PathHelper.models = function(entityName, core) {
+    return constructPath("models", entityName, core);
 };
 
-PathHelper.helpers = function(entityName) {
-    return constructPath("helpers", entityName);
+PathHelper.helpers = function(entityName, core) {
+    return constructPath("helpers", entityName, core);
 };
 
-PathHelper.controllers = function(entityName) {
-    return constructPath("controllers", entityName);
+PathHelper.controllers = function(entityName, core) {
+    return constructPath("controllers", entityName, core);
 };
 
 PathHelper.sessions = function(entityName) {

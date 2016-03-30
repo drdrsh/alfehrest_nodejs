@@ -1,10 +1,19 @@
 'use strict';
 
 module.exports.load = function(app, router){
-    var normalizedPath = require("path").join(framework.rootPath, "./controllers/");
-    require("fs").readdirSync(framework.helpers.path.controllers()).forEach(function (file) {
+
+    //Load app controllers
+    require("fs").readdirSync(framework.helpers.path.controllers(null, false)).forEach(function (file) {
         if(file.substr(-3) == '.js') {
-            framework.helpers.controller.load(file, app, router);
+            framework.helpers.controller.load(file, false, app, router);
         }
     });
+
+    //Load core controllers
+    require("fs").readdirSync(framework.helpers.path.controllers(null, true)).forEach(function (file) {
+        if(file.substr(-3) == '.js') {
+            framework.helpers.controller.load(file, true, app, router);
+        }
+    });
+
 };

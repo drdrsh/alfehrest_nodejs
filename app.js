@@ -1,31 +1,31 @@
 'use strict';
-
 var argv = require('./arguments.js');
-argv.silent = false;
-var express    = require('express');
-var bodyParser = require('body-parser');
-var fs         = require('fs');
-var morgan     = require('morgan');
+
+var express        = require('express');
+var bodyParser     = require('body-parser');
+var fs             = require('fs');
+
+if(!argv.appId) {
+    console.log('Failed to load app');
+    process.exit(1);
+}
+global.appId = argv.appId;
 
 var app    = express();
 var router = express.Router();
 
 global.framework = require('./framework.js')(app, router, argv);
 
-//Log file handling
-var logDirectory = __dirname + '/log';
-fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
-var accessLogStream = fs.createWriteStream(logDirectory + '/access.log', {flags: 'a'});
-var errorLogStream = fs.createWriteStream(logDirectory + '/error.log', {flags: 'a'});
-app.use(morgan('combined', {stream: accessLogStream}));
-app.use(morgan('combined', {stream: errorLogStream, skip: function (req, res) { return res.statusCode < 400 }}));
 
 //Parsing Body
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 //OPTIONS request handling
-app.use(function(req, res, next){
+app.use(function(req, res, next) {
+
+
+
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
@@ -71,16 +71,25 @@ app.use(function(req, res, next){
 });
 
 
-app.use(global.framework.rootUrl, router);
+app.use(framework.rootUrl, framework.router);
 app.use(function(err, req, res, next){
 
-    var nodeErrorLogStream = fs.createWriteStream(logDirectory + '/server-error.log', {flags: 'a'});
     var errorObject = {
         'code'   : err.code,
         'message': err.message
     };
 
-    nodeErrorLogStream.write(err.stack);
+    /*
+    var logDirectory = `./apps/${appId}/logs/`;
+    let stream = require('file-stream-rotator').getStream({
+        filename: require('path').join(logDirectory, 'server_error_%DATE%.log'),
+        frequency: 'daily',
+        verbose: true,
+        date_format: 'YYYYMMDD'
+    });
+    let result = stream.write(err.stack);
+    stream.end();
+    */
 
     if(framework.env != 'production') {
         errorObject.stack = err.stack;
@@ -96,9 +105,9 @@ app.use(function(err, req, res, next){
 
 require('./controllers').load(app, router);
 
-app.server = app.listen(argv['port']);
-module.exports = app;
+var selectedPort = argv.port || framework.port;
+app.server = app.listen(selectedPort, function(){
+    console.log(`${appId} Server started on port ${selectedPort} @ ${framework.rootUrl}`);
+});
 
-if(!framework.args['silent']) {
-    console.log(`AlFehrest Server started on port ${argv.port}`);
-}
+module.exports = app;

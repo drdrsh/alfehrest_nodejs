@@ -6,16 +6,17 @@
     "arangojs": "^4.3.0",
     "body-parser": "~1.13.1",
     "crypto": "0.0.3",
-    "debug": "~2.2.0",
     "express": "^4.13.4",
-    "file-stream-rotator": "0.0.6",
-    "morgan": "~1.6.1",
     "optimist": "^0.6.1",
     "shortid": "~2.2.2"
   },
   "devDependencies": {
+    "debug": "~2.2.0",
     "expect.js": "^0.3.1",
-    "superagent": "^1.8.0"
+    "superagent": "^1.8.0",
+    "ncp": "^2.0.0",
+    "rimraf": "^2.5.2",
+    "tar.gz": "^1.0.3"
   },
   "scripts": {
     "test": "mocha --use_strict ./tests/",

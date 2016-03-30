@@ -4,8 +4,8 @@ var ModelHelper = {};
 
 var path = require("./PathHelper.js");
 
-ModelHelper.get = function(e) {
-    return require(path.models(e)).getInstance();
+ModelHelper.get = function(e, core) {
+    return require(path.models(e, core)).getInstance();
 };
 
 ModelHelper.getDatabase = function(){

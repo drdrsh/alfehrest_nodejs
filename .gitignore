@@ -1,9 +1,6 @@
-/users/profiles/mostafa.json
-/users/sessions
+/apps
 node_modules/
 .idea_modules/
-
-/settings/database.js
 
 # User-specific stuff:
 .idea/workspace.xml

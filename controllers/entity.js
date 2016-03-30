@@ -6,7 +6,7 @@ function EntityController(app, router) {
 
     function getDatabase() { return framework.helpers.model.getDatabase(); }
 
-    function loadEntityModel(entityName) { return framework.helpers.model.get(entityName); }
+    function loadEntityModel(entityName, core) { return framework.helpers.model.get(entityName, core); }
 
     function loadModel() { return loadEntityModel(getEntityName());}
 
@@ -34,7 +34,7 @@ function EntityController(app, router) {
                     relationships[i].first_entity_id = newEntityId;
                 }
 
-                var model = loadEntityModel('relationship');
+                var model = loadEntityModel('relationship', true);
                 return model.create(framework.currentLanguage, newEntityId, relationships, false);
             },
             err => { next(err); }
@@ -106,7 +106,7 @@ function EntityController(app, router) {
         }
 
         var entityModel = loadModel();
-        var relationshipModel = loadEntityModel('relationship');
+        var relationshipModel = loadEntityModel('relationship', true);
 
         var incomingRelationships = req.body.relationships || [];
         delete req.body.relationships;
@@ -152,13 +152,15 @@ function EntityController(app, router) {
 
     }
 
-    router.get('/' + getEntityName() + '/schema/', getSchema);
-    router.get('/' + getEntityName() + '/:id/', getOne);
-    router.get('/' + getEntityName() + '/:id/related', getRelated);
-    router.get('/' + getEntityName() + '/', getAll);
-    router.put('/' + getEntityName() + '/:id/', update);
-    router.post('/' + getEntityName() + '/', post);
-    router.delete('/' + getEntityName() + '/', remove);
+    if(getEntityName() !== null) {
+        router.get('/' + getEntityName() + '/schema/', getSchema);
+        router.get('/' + getEntityName() + '/:id/', getOne);
+        router.get('/' + getEntityName() + '/:id/related', getRelated);
+        router.get('/' + getEntityName() + '/', getAll);
+        router.put('/' + getEntityName() + '/:id/', update);
+        router.post('/' + getEntityName() + '/', post);
+        router.delete('/' + getEntityName() + '/', remove);
+    }
 
 }
 
