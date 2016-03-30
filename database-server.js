@@ -5,6 +5,7 @@ var targz = require('tar.gz');
 var fs    = require('fs');
 
 
+
 /*
 if(!process.getuid || process.getuid() !== 0) {
     console.log("This script needs to run as root to be able to start a docker container");
@@ -31,6 +32,8 @@ if(['start', 'stop'].indexOf(argv._[0]) === -1) {
 
 let mode = argv._[0];
 let appId = argv._[1];
+let force = argv.force;
+
 var dbConfig = null;
 try {
     dbConfig = require(`./apps/${appId}/settings/database.js`);
@@ -39,8 +42,22 @@ try {
     process.exit(1);
 }
 
-let engineName = `${appId}_arango_server`;
+let engineName = `${appId}-arango-server`;
 let port = dbConfig.test.url.split(':').pop();
+
+const DB_FILES_PATH = `./apps/${appId}/data/`;
+const ARANGO_PATH = require('path').resolve(`${DB_FILES_PATH}arangodb/`);
+let   dbExists   = true;
+try {
+    fs.accessSync(ARANGO_PATH + '/databases/', fs.R_OK);
+} catch (e) {
+    dbExists = false;
+}
+
+if(dbExists && !force && mode === 'start') {
+    console.log("Database already exists, use --force to delete existant database");
+    process.exit(1);
+}
 
 process.stdout.write("Stopping previous containers...");
 
@@ -58,8 +75,6 @@ if(mode === 'stop') {
     process.exit(0);
 }
 
-const DB_FILES_PATH = `./apps/${appId}/data/`;
-const ARANGO_PATH = require('path').resolve(`${DB_FILES_PATH}arangodb/`);
 require('rimraf').sync(ARANGO_PATH);
 
 process.stdout.write("Extracting data...");
