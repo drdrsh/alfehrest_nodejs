@@ -103,7 +103,7 @@ function runContainer() {
 
     let params = [
         '--name', engineName,
-        '-p', `8529:${port}`,
+        '-p', `${port}:8529`,
         '-d',
         '-v', `${newPath}:/var/lib/arangodb`,
         `arangodb:2.8.1`
