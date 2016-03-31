@@ -71,8 +71,18 @@ ModelHelper.detranslateObject= function(obj, language) {
         activeLanguage = framework.mainLanguage
     }
 
-    for(var idx in obj.strings[activeLanguage]) {
-        obj[idx] = obj.strings[activeLanguage][idx];
+    for(let idx in obj.strings[activeLanguage]) {
+        let str = obj.strings[activeLanguage][idx];
+        if(Array.isArray(str)) {
+            if(Array.isArray(obj[idx])) {
+                for(let x=0; x<obj[idx].length; x++) {
+                    Object.assign(obj[idx][x], str[x]);
+                }
+                continue;
+            }
+        }
+        obj[idx] = str;
+
     }
     delete obj.strings;
 
