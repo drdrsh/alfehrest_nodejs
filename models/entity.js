@@ -133,10 +133,57 @@ function getRelated(language, id, types) {
 
 }
 
-function getOne(language, id) {
+function getFields(language, id, fields) {
+
+    let eCol = cfg.entity_collection;
+    let rCol = cfg.relation_collection;
+    let schema = this.getEntitySchema();
+    let jsonPairs = [];
+
+    for(let i=0; i<fields.length; i++) {
+        let f = fields[i];
+        if( !(f in schema)) {
+            return Promise.reject(framework.error(1, 400, `Invalid field ${f}`));
+        }
+        let fieldMeta = schema[f];
+        let path = `e.${f}`;
+        if(fieldMeta.translatable) {
+            path = `e.strings.${language}.${f}`;
+        }
+        jsonPairs.push(`'${f}': ${path}`);
+    }
+    let jsonString = jsonPairs.join(',');
+
+    var query = `
+    FOR e in ${eCol} 
+        FILTER e._key == '${id}' 
+    RETURN {
+        'id': e._key,
+        ${jsonString}
+    }`;
+
+    return new Promise(function(resolve, reject){
+        modelHelper.getOneRecord(query).then(
+            record => {
+                var modelHelper = framework.helpers.model;
+                if(!record) {
+                    return reject(framework.error(1, 404, 'Not Found'));
+                }
+                resolve(record);
+            },
+            err => {reject(err)}
+        );
+    });
+}
+
+function getOne(language, id, fields) {
 
     var eCol = cfg.entity_collection;
     var rCol = cfg.relation_collection;
+
+    if(fields.length) {
+        return getFields.call(this, language, id, fields);
+    }
 
     var query = `
     LET eid = '${id}'

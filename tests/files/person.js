@@ -121,6 +121,31 @@ module.exports = function(rootURL) {
                 });
         });
 
+        it('Read Single Field: Should succeed', function (done) {
+            request
+                .get(rootURL + 'person/' + newId + '/?fields=name')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .end(function (err, r) {
+                    var act = r.res.body;
+                    assert.equal(r.status, 200);
+                    assert.equal(act.id, newObject.id);
+                    assert.equal(act.name, newObject.name);
+                    done();
+                });
+        });
+
+        it('Read Single Field: Should succeed', function (done) {
+            request
+                .get(rootURL + 'person/' + newId + '/?fields=non_existant')
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .end(function (err, r) {
+                    assert.equal(r.status, 400);
+                    done();
+                });
+        });
+
         it('Update entity with ID discrepancy: Should fail', function (done) {
             newObject.bio = rand.generate();
             newObject.id = 'person_XXXXXXX';

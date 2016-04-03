@@ -96,9 +96,16 @@ function EntityController(app, router) {
             return next(framework.error(1, 404, 'Not Found'));
         }
 
+        let fields = req.query.fields || [];
+        if(!Array.isArray(fields)) {
+            fields = '' + fields;
+            fields = fields.replace(/[.:\/\\'"{}$]/ig, '');
+            fields = fields.split(',');
+        }
+
         var model = loadModel();
 
-        model.getOne(framework.currentLanguage, id)
+        model.getOne(framework.currentLanguage, id, fields)
         .then(
             data => { res.send(data); },
             err => { next(err); }
