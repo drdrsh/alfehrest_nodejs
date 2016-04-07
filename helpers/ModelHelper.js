@@ -4,6 +4,14 @@ var ModelHelper = {};
 
 var path = require("./PathHelper.js");
 
+ModelHelper.UID = function(entityType, id) {
+    if(typeof id === 'undefined') {
+        id = require('shortid').generate();
+    }
+    let hash = require('crypto').createHash('sha256').update(entityType + id).digest('hex').substr(0, 13);
+    return `${entityType}_${hash}`;
+};
+
 ModelHelper.get = function(e, core) {
     return require(path.models(e, core)).getInstance();
 };

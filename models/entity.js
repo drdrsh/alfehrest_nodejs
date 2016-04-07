@@ -1,6 +1,5 @@
 'use strict';
 
-var uniqueIdGenerator = require('shortid');
 var cfg = framework.helpers.settings.get("database");
 var modelHelper = framework.helpers.model;
 var db = modelHelper.getDatabase();
@@ -9,8 +8,7 @@ function create(language, props) {
 
     var className = this.getEntityName().toLowerCase();
 
-    //TODO : should double check if random id already exists
-    props.id   = this.getEntityName() + "_" + uniqueIdGenerator.generate();
+    props.id   = modelHelper.UID(this.getEntityName());
     try {
         props = modelHelper.cleanForm(this.getEntitySchema(), language, props);
     } catch(e) {

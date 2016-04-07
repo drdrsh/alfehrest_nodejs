@@ -1,6 +1,5 @@
 'use strict';
 
-var uniqueIdGenerator = require('shortid');
 var cfg = framework.helpers.settings.get("database");
 var modelHelper = framework.helpers.model;
 var db = modelHelper.getDatabase();
@@ -60,7 +59,7 @@ function prepareRelationshipData(language, parentId, data, isUpdate) {
         relationshipProperties.relationship = relationshipSubtype;
 
         if(!isUpdate) {
-            relationshipProperties._key = "rel_" + uniqueIdGenerator.generate();
+            relationshipProperties._key = modelHelper.UID('rel');
         } else {
             relationshipProperties._key = relationshipProperties.id;
         }
