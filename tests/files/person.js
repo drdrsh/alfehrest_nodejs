@@ -29,7 +29,7 @@ module.exports = function(rootURL) {
 
         it('Create invalid object 1: Should fail', function (done) {
             request
-                .post(rootURL + 'person/')
+                .post(rootURL + 'person1/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_1.json')))
@@ -41,7 +41,7 @@ module.exports = function(rootURL) {
 
         it('Create invalid object 2: Should fail', function (done) {
             request
-                .post(rootURL + 'person/')
+                .post(rootURL + 'person1/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_2.json')))
@@ -53,7 +53,7 @@ module.exports = function(rootURL) {
 
         it('Create invalid object 3: Should fail', function (done) {
             request
-                .post(rootURL + 'person/')
+                .post(rootURL + 'person1/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_invalid_person_3.json')))
@@ -65,7 +65,7 @@ module.exports = function(rootURL) {
 
         it('Create valid object: Should succeed', function (done) {
             request
-                .post(rootURL + 'person/')
+                .post(rootURL + 'person1/')
                 .send(JSON.parse(fs.readFileSync('tests/data/person/create_valid_person.json')))
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
@@ -78,7 +78,7 @@ module.exports = function(rootURL) {
 
         it('Get all entities list', function (done) {
             request
-                .get(rootURL + 'person/')
+                .get(rootURL + 'person1/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {
@@ -96,7 +96,7 @@ module.exports = function(rootURL) {
 
         it('Read valid entity: Should succeed', function (done) {
             request
-                .get(rootURL + 'person/' + newId + '/')
+                .get(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {
@@ -123,7 +123,7 @@ module.exports = function(rootURL) {
 
         it('Read Single Field: Should succeed', function (done) {
             request
-                .get(rootURL + 'person/' + newId + '/?fields=name')
+                .get(rootURL + 'person1/' + newId + '/?fields=name')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {
@@ -137,7 +137,7 @@ module.exports = function(rootURL) {
 
         it('Read Single Field: Should succeed', function (done) {
             request
-                .get(rootURL + 'person/' + newId + '/?fields=non_existant')
+                .get(rootURL + 'person1/' + newId + '/?fields=non_existant')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {
@@ -150,7 +150,7 @@ module.exports = function(rootURL) {
             newObject.bio = rand.generate();
             newObject.id = 'person_XXXXXXX';
             request
-                .put(rootURL + 'person/' + newId + '/')
+                .put(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send(newObject)
@@ -164,7 +164,7 @@ module.exports = function(rootURL) {
             newObject.id = newId;
             newObject.bio = rand.generate();
             request
-                .put(rootURL + 'person/' + newId + '/')
+                .put(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send(newObject)
@@ -176,7 +176,7 @@ module.exports = function(rootURL) {
 
         it('Read updated entity: Should succeed', function (done) {
             request
-                .get(rootURL + 'person/' + newId + '/')
+                .get(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {
@@ -191,7 +191,7 @@ module.exports = function(rootURL) {
         it('Update entity partial: Should succeed', function (done) {
             partialEntity = {'id': newId, 'bio': rand.generate()};
             request
-                .put(rootURL + 'person/' + newId + '/')
+                .put(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send(partialEntity)
@@ -203,7 +203,7 @@ module.exports = function(rootURL) {
 
         it('Read updated entity: Should succeed', function (done) {
             request
-                .get(rootURL + 'person/' + newId + '/')
+                .get(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {
@@ -218,7 +218,7 @@ module.exports = function(rootURL) {
 
         it('Delete entity: Should succeed', function (done) {
             request
-                .delete(rootURL + 'person/')
+                .delete(rootURL + 'person1/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .send({'id': newId})
@@ -230,7 +230,7 @@ module.exports = function(rootURL) {
 
         it('Reads deleted entity: Should fail', function (done) {
             request
-                .get(rootURL + 'person/' + newId + '/')
+                .get(rootURL + 'person1/' + newId + '/')
                 .set('content-language', 'ar')
                 .set('Authorization', sessionId)
                 .end(function (err, r) {

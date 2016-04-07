@@ -23,7 +23,7 @@ module.exports = function(rootURL) {
 
         it('Access open endpoint w/o authorization: Should succeed', function (done) {
             request
-                .get(rootURL + 'person/')
+                .get(rootURL + 'person1/')
                 .set('content-language', 'ar')
                 .end(function (err, r) {
                     assert.equal(r.res.statusCode, 200);

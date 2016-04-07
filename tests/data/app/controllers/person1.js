@@ -2,12 +2,12 @@
 
 var EntityController = require(framework.helpers.path.controllers('entity', true));
 
-function PersonController(app, router) {
+function Person1Controller(app, router) {
     this.getEntityName = function() {
-        return "person";
+        return "person1";
     };
     EntityController.call(this, app, router);
 }
 
-require("util").inherits(PersonController, EntityController);
-module.exports = PersonController;
+require("util").inherits(Person1Controller, EntityController);
+module.exports = Person1Controller;

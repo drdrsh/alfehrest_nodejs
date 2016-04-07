@@ -5,7 +5,7 @@
   "firstEntityType": "",
   "secondEntityType": "",
   "type": "",
-  "relationship": "related_a",
+  "relationship": "zawj",
   "dateStarted": {
     "first_date": null,
     "second_date": null,
@@ -25,7 +25,7 @@
   "firstEntityType": "",
   "secondEntityType": "",
   "type": "",
-  "relationship": "related_b",
+  "relationship": "wld",
   "comments": "",
   "references": ["سجاح", "Good"]
 }]
