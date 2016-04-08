@@ -165,10 +165,41 @@ module.exports = function(rootURL) {
                 });
         });
 
-        it(`Read a filtered ${selectedItem}'s related entities : Should Succeed`, function (done) {
+        it(`Read a filtered ${selectedItem}'s related entities (one type) : Should Succeed`, function (done) {
             let controller = entityIds[selectedItem].split('_')[0];
             let allowedTypes = [];
-            for(let i=0; i<ENTITY_TYPES.length-1; i++) {
+            for(let i=0; i<ENTITY_TYPES.length; i++) {
+                if(ENTITY_TYPES[i] == controller) {
+                    continue;
+                }
+                allowedTypes.push(ENTITY_TYPES[i]);
+                break;
+            }
+
+            request
+                .get(rootURL + controller + '/' + entityIds[selectedItem] + '/related/?types=' + allowedTypes.join(','))
+                .set('content-language', 'ar')
+                .set('Authorization', sessionId)
+                .end(function(err, r) {
+                    assert.equal(r.status, 200);
+                    let rels = r.body.relationships;
+                    const EXPECTED_COUNT = allowedTypes.length * ENTITY_COUNT;
+                    assert.equal(rels.outgoing.length, EXPECTED_COUNT);
+                    assert.equal(rels.incoming.length, EXPECTED_COUNT);
+                    for(let x=0;x<EXPECTED_COUNT-1;x++) {
+                        let rel1 = rels.outgoing[x];
+                        let rel2 = rels.incoming[x];
+                        assert.notEqual(allowedTypes.indexOf(rel1.entity._entity_type), -1);
+                        assert.notEqual(allowedTypes.indexOf(rel2.entity._entity_type), -1);
+                    }
+                    done();
+                });
+        });
+
+        it(`Read a filtered ${selectedItem}'s related entities (Many types) : Should Succeed`, function (done) {
+            let controller = entityIds[selectedItem].split('_')[0];
+            let allowedTypes = [];
+            for(let i=0; i<ENTITY_TYPES.length; i++) {
                 if(ENTITY_TYPES[i] == controller) {
                     continue;
                 }

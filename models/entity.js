@@ -75,8 +75,8 @@ function getRelated(language, id, types) {
         e2Filters.push(`e2._entity_type == "${t}"`);
     }
     if(types.length) {
-        e1FilterClause = " AND " + e1Filters.join(" OR ");
-        e2FilterClause = " AND " + e2Filters.join(" OR ");
+        e1FilterClause = " AND (" + e1Filters.join(" OR ") + ")";
+        e2FilterClause = " AND (" + e2Filters.join(" OR ") + ")";
     }
 
 
