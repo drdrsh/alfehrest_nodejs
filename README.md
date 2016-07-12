@@ -1,5 +1,5 @@
 # AlFehrest ArangoDB and NodeJS Server  [![Build Status](https://travis-ci.org/drdrsh/alfehrest_nodejs.svg?branch=master)](https://travis-ci.org/drdrsh/alfehrest_nodejs)
-An [ArrangoDB](http://arangodb.com) and [NodeJS](http://nodejs.org) based AlFehrest server side app.
+An [ArangoDB](http://arangodb.com) and [NodeJS](http://nodejs.org) based AlFehrest server side app.
 
 
 ## Docker based build 
