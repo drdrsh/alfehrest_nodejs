@@ -12,6 +12,7 @@ var rimraf  = require('rimraf');
 var randStr = rand.generate();
 var appName = `app_${randStr}`;
 
+//Hello from 11 KM above the atlantic
 var server = null;
 process.env.appId    = appName;
 process.env.port     = "6666";
