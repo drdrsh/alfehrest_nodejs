@@ -59,7 +59,7 @@ app.use(function(req, res, next) {
 //Request Language handling
 app.use(function(req, res, next){
 
-    var lang = req.headers["content-language"];
+    var lang = req.headers["accept-language"];
 
     var supportedLanguages = framework.helpers.settings.get('general').languages;
     if(supportedLanguages.indexOf(lang) == -1) {
